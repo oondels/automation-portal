@@ -65,27 +65,27 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
           switch (status) {
             case "approved":
               eventType = "approval";
-              actionText = "Project approved";
+              actionText = "Projeto Aprovado";
               break;
             case "in_progress":
               eventType = "start";
-              actionText = "Project started";
+              actionText = "Projeto Iniciado";
               break;
             case "paused":
               eventType = "pause";
-              actionText = "Project paused";
+              actionText = "Projeto Pausado";
               break;
             case "completed":
               eventType = "completion";
-              actionText = "Project completed";
+              actionText = "Projeto Concluído";
               break;
             case "rejected":
               eventType = "rejection";
-              actionText = "Project rejected";
+              actionText = "Projeto Rejeitado";
               break;
             default:
               eventType = "request";
-              actionText = "Project status updated";
+              actionText = "Projeto status atualizado";
           }
 
           // Create new timeline event

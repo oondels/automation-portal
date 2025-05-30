@@ -43,7 +43,7 @@ export function DashboardPage() {
   const pendingApproval = projects.filter(p => p.status === "requested").length;
   const inProgress = projects.filter(p => p.status === "in_progress").length;
   const approvedNotStarted = projects.filter(p => p.status === "approved").length;
-  const teamMembers = 3; // Mock value - replace with actual team size
+  const teamMembers = 1; // Mock value - replace with actual team size
   const requestsPerMember = totalRequests > 0 ? (inProgress / teamMembers).toFixed(1) : 0;
   const isOverloaded = Number(requestsPerMember) > 3; // Threshold of 3 projects per team member
 
@@ -55,12 +55,12 @@ export function DashboardPage() {
 
   // Weekly requests data (mock data - replace with actual data)
   const weeklyData = [
-    { week: "Week 1", requests: 5 },
-    { week: "Week 2", requests: 8 },
-    { week: "Week 3", requests: 12 },
-    { week: "Week 4", requests: 7 },
-    { week: "Week 5", requests: 15 },
-    { week: "Week 6", requests: 10 }
+    { week: "Semana 1", requests: 5 },
+    { week: "Semana 2", requests: 8 },
+    { week: "Semana 3", requests: 12 },
+    { week: "Semana 4", requests: 7 },
+    { week: "Semana 5", requests: 15 },
+    { week: "Semana 6", requests: 10 }
   ];
 
   // Backlog trend data (mock data - replace with actual data)
@@ -101,9 +101,9 @@ export function DashboardPage() {
         className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
       >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Resource Management Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard de Gerenciamento de Solicitações</h1>
           <p className="text-muted-foreground">
-            Monitor automation project requests and team capacity
+            Monitoramento automático de solicitações de projetos e capacidade da equpe
           </p>
         </div>
         <Link to="/new-request">
@@ -119,8 +119,8 @@ export function DashboardPage() {
         >
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-warning" />
-            <p className="text-sm text-warning">
-              Alert: Team is currently overloaded with {requestsPerMember} projects per team member
+            <p className="text-sm text-black">
+              Alerta: A equipe está atualmente sobrecarregada com {requestsPerMember} projetos por membro da equipe
             </p>
           </div>
         </motion.div>
@@ -135,13 +135,13 @@ export function DashboardPage() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+              <CardTitle className="text-sm font-medium">Requisições</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalRequests}</div>
               <p className="text-xs text-muted-foreground">
-                All automation project requests
+                Todas as solicitações de projetos de automação
               </p>
             </CardContent>
           </Card>
@@ -150,13 +150,13 @@ export function DashboardPage() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
+              <CardTitle className="text-sm font-medium">Aguardando Aprovação</CardTitle>
               <Clock className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{pendingApproval}</div>
               <p className="text-xs text-muted-foreground">
-                Awaiting review and approval
+                Aguardando revisão e aprovação
               </p>
             </CardContent>
           </Card>
@@ -165,13 +165,13 @@ export function DashboardPage() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Team Load</CardTitle>
+              <CardTitle className="text-sm font-medium">Carga da Equipe</CardTitle>
               <Users className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{requestsPerMember}</div>
               <p className="text-xs text-muted-foreground">
-                Active projects per team member
+                Projetos ativos por membro da Equipe
               </p>
             </CardContent>
           </Card>
@@ -181,9 +181,9 @@ export function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Project Status Distribution</CardTitle>
+            <CardTitle>Distribuição de Status do Projeto</CardTitle>
             <CardDescription>
-              Current state of all automation requests
+              Estado atual de todas as solicitações de automação
             </CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
@@ -210,9 +210,9 @@ export function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Weekly Request Trend</CardTitle>
+            <CardTitle>Trends de Solicitações Semanais</CardTitle>
             <CardDescription>
-              New automation requests per week
+              Novas solicitações de automação por semana
             </CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
@@ -234,9 +234,9 @@ export function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Backlog Growth Trend</CardTitle>
+          <CardTitle>Tendência de crescimento do backlog</CardTitle>
           <CardDescription>
-            Cumulative project backlog over time
+            Cumulativo de backlog de projetos ao longo do tempo
           </CardDescription>
         </CardHeader>
         <CardContent className="h-[300px]">
@@ -259,24 +259,24 @@ export function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Team Capacity Overview</CardTitle>
+          <CardTitle>Visão Geral da Capacidade da Equipe</CardTitle>
           <CardDescription>
-            Current resource allocation and capacity
+            Alocação e capacidade de recursos atuais
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Team Members</p>
+                <p className="text-sm font-medium">Membros da Equipe</p>
                 <p className="text-2xl font-bold">{teamMembers}</p>
               </div>
               <div>
-                <p className="text-sm font-medium">Active Projects</p>
+                <p className="text-sm font-medium">Projetos Ativos</p>
                 <p className="text-2xl font-bold">{inProgress}</p>
               </div>
               <div>
-                <p className="text-sm font-medium">Projects per Member</p>
+                <p className="text-sm font-medium">Projetos por Membro</p>
                 <p className="text-2xl font-bold">{requestsPerMember}</p>
               </div>
             </div>
@@ -294,8 +294,8 @@ export function DashboardPage() {
             
             <p className="text-sm text-muted-foreground">
               {isOverloaded 
-                ? "Team is over capacity. Consider adding more resources."
-                : "Team capacity is within acceptable limits."}
+                ? "A equipe está sobrecarregada. Considere adicionar mais recursos."
+                : "Capacidade da equipe está dentro dos limites aceitáveis."}
             </p>
           </div>
         </CardContent>

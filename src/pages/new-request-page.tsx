@@ -25,21 +25,21 @@ import { sectors } from "../data/mockData";
 import { ProjectUrgency } from "../types";
 
 const projectTypes = [
-  { id: "app_dev", label: "Application Development" },
-  { id: "iot", label: "IoT" },
-  { id: "process", label: "Process Automation" },
+  { id: "app_dev", label: "Desenvolvimento de Aplicativo" },
+  { id: "iot", label: "IOT" },
+  { id: "process", label: "Automação de Processos" },
 ];
 
 const urgencyLevels: { value: ProjectUrgency; label: string; color: string }[] = [
-  { value: "low", label: "Low", color: "bg-success/10 text-success hover:bg-success/20" },
-  { value: "medium", label: "Medium", color: "bg-warning/10 text-warning hover:bg-warning/20" },
-  { value: "high", label: "High", color: "bg-destructive/10 text-destructive hover:bg-destructive/20" },
+  { value: "low", label: "Baixa", color: "bg-success/10 text-success hover:bg-success/20" },
+  { value: "medium", label: "Média", color: "bg-warning/10 text-warning hover:bg-warning/20" },
+  { value: "high", label: "Alta", color: "bg-destructive/10 text-destructive hover:bg-destructive/20" },
 ];
 
 const expectedGains = [
-  { id: "people", label: "People" },
-  { id: "costs", label: "Operational Costs" },
-  { id: "ergonomics", label: "Ergonomics" },
+  { id: "people", label: "Pessoas" },
+  { id: "costs", label: "Custos Operacionais" },
+  { id: "ergonomics", label: "Ergonomia" },
 ];
 
 export function NewRequestPage() {
@@ -113,9 +113,9 @@ export function NewRequestPage() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">New Project Request</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Nova Solicitação de Projeto</h1>
             <p className="text-muted-foreground">
-              Submit a new automation project request for review
+              Envie uma nova solicitação de projeto de automação para revisão
             </p>
           </div>
           <div className="hidden md:block">
@@ -133,20 +133,20 @@ export function NewRequestPage() {
       >
         <Card>
           <CardHeader>
-            <CardTitle>Project Details</CardTitle>
+            <CardTitle>Detalhes do Projeto</CardTitle>
             <CardDescription>
-              Provide the basic information about your project
+              Informe os detalhes do projeto que você deseja solicitar.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Project Name <span className="text-destructive">*</span>
+                Nome do Projeto <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
-                placeholder="Enter the project title"
+                placeholder="Digite o título do projeto"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 className="max-w-xl"
@@ -157,14 +157,14 @@ export function NewRequestPage() {
               <div className="space-y-2">
                 <Label htmlFor="sector" className="flex items-center gap-2">
                   <Factory className="h-4 w-4" />
-                  Sector <span className="text-destructive">*</span>
+                  Setor <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.sector}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, sector: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a sector" />
+                    <SelectValue placeholder="Selecione um Setor" />
                   </SelectTrigger>
                   <SelectContent>
                     {sectors.map((sector) => (
@@ -179,11 +179,11 @@ export function NewRequestPage() {
               <div className="space-y-2">
                 <Label htmlFor="cell" className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  Cell <span className="text-destructive">*</span>
+                  Célula <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="cell"
-                  placeholder="Specify the cell or sub-area"
+                  placeholder="Especifique a célula"
                   value={formData.cell}
                   onChange={(e) => setFormData(prev => ({ ...prev, cell: e.target.value }))}
                 />
@@ -193,7 +193,7 @@ export function NewRequestPage() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Layers className="h-4 w-4" />
-                Project Type <span className="text-destructive">*</span>
+                Tipo de Projeto <span className="text-destructive">*</span>
               </Label>
               <RadioGroup
                 value={formData.projectType}
@@ -216,7 +216,7 @@ export function NewRequestPage() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Urgency Level <span className="text-destructive">*</span>
+                Nível de Urgência <span className="text-destructive">*</span>
               </Label>
               <RadioGroup
                 value={formData.urgency}
@@ -239,11 +239,11 @@ export function NewRequestPage() {
             <div className="space-y-2">
               <Label htmlFor="description" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Project Description <span className="text-destructive">*</span>
+                Descrição do Projeto <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 id="description"
-                placeholder="Describe the project's objectives and scope"
+                placeholder="Descreva os objetivos e o escopo do projeto"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 className="min-h-[100px]"
@@ -253,7 +253,7 @@ export function NewRequestPage() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Tags className="h-4 w-4" />
-                Expected Gains
+                Ganhos Esperados
               </Label>
               <div className="flex flex-wrap gap-2">
                 {expectedGains.map((gain) => (
@@ -278,7 +278,7 @@ export function NewRequestPage() {
             variant="outline"
             onClick={() => navigate(-1)}
           >
-            Cancel
+            Cancelar
           </Button>
           <Button
             type="submit"
@@ -292,7 +292,7 @@ export function NewRequestPage() {
                 className="mr-2 h-4 w-4 border-2 border-t-transparent border-white rounded-full"
               />
             ) : null}
-            {isSubmitting ? "Submitting..." : "Submit Request"}
+            {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
           </Button>
         </div>
       </motion.form>

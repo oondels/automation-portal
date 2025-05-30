@@ -82,16 +82,16 @@ export function ProjectsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Projetos de Automação</h1>
           <p className="text-muted-foreground">
-            Browse and manage automation project requests
+            Navegue e gerencie solicitações de projetos de automação
           </p>
         </motion.div>
         <div className="flex items-center gap-2">
           <Link to="/new-request">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              New Project
+              Novo Projeto
             </Button>
           </Link>
         </div>
@@ -99,7 +99,7 @@ export function ProjectsPage() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle>Project Requests</CardTitle>
+          <CardTitle>Solicitações de Projetos</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-6 space-y-4">
@@ -107,7 +107,7 @@ export function ProjectsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search projects..."
+                  placeholder="Pesquisar projetos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -119,9 +119,9 @@ export function ProjectsPage() {
                 className="w-full md:w-auto"
               >
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
-                Filters
+                Filtros
                 {(statusFilter !== "all" || sectorFilter !== "all" || urgencyFilter !== "all") && (
-                  <Badge variant="secondary\" className="ml-2">
+                  <Badge variant="secondary" className="ml-2">
                     {[
                       statusFilter !== "all",
                       sectorFilter !== "all",
@@ -165,7 +165,7 @@ export function ProjectsPage() {
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="all">Todos Status</SelectItem>
                         {Object.entries(statuses).map(([key, { label }]) => (
                           <SelectItem key={key} value={key}>
                             {label}
@@ -182,7 +182,7 @@ export function ProjectsPage() {
                         <SelectValue placeholder="Sector" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Sectors</SelectItem>
+                        <SelectItem value="all">Todos Setores</SelectItem>
                         {sectors.map((sector) => (
                           <SelectItem key={sector.id} value={sector.name}>
                             {sector.name}
@@ -199,7 +199,7 @@ export function ProjectsPage() {
                         <SelectValue placeholder="Urgency" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Urgencies</SelectItem>
+                        <SelectItem value="all">Todos Níveis</SelectItem>
                         {Object.entries(urgencies).map(([key, { label }]) => (
                           <SelectItem key={key} value={key}>
                             {label}
@@ -215,7 +215,7 @@ export function ProjectsPage() {
                         className="h-10"
                       >
                         <X className="mr-2 h-4 w-4" />
-                        Clear Filters
+                        Limpar Filtros
                       </Button>
                     )}
                   </div>
@@ -251,25 +251,25 @@ export function ProjectsPage() {
                 <thead className="border-b">
                   <tr>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Project Name
+                      Nome do Projeto
                     </th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Sector
+                      Setor
                     </th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                       Status
                     </th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Urgency
+                      Nível de Prioridade
                     </th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Start Date
+                      Data de Início
                     </th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Est. End Date
+                      Data de Término Estimada
                     </th>
                     <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
-                      Actions
+                      Ações
                     </th>
                   </tr>
                 </thead>
@@ -303,7 +303,7 @@ export function ProjectsPage() {
                       <td className="p-4 text-right align-middle">
                         <Link to={`/projects/${project.id}`}>
                           <Button variant="outline" size="sm">
-                            View Details
+                            Ver Detalhes
                           </Button>
                         </Link>
                       </td>
@@ -357,7 +357,7 @@ export function ProjectsPage() {
 
           <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
             <p>
-              Showing {filteredProjects.length} of {projects.length} projects
+              Exibindo {filteredProjects.length} de {projects.length} projetos
             </p>
           </div>
         </CardContent>

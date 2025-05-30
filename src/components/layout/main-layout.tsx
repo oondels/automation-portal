@@ -1,9 +1,13 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./sidebar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { Toaster } from "sonner";
 
-export function MainLayout() {
+interface MainLayoutProps {
+  children?: ReactNode;
+}
+
+export function MainLayout({ children }: MainLayoutProps) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -21,7 +25,7 @@ export function MainLayout() {
 
       <main className={`flex-1 transition-all ${isMobile ? "ml-0" : "ml-[80px]"} p-4 md:p-6`}>
         <div className="container mx-auto">
-          <Outlet />
+          {children ? children : <Outlet />}
         </div>
       </main>
       
