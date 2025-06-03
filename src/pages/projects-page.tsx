@@ -283,7 +283,7 @@ export function ProjectsPage() {
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Filtros
                 {(statusFilter !== "all" || sectorFilter !== "all" || urgencyFilter !== "all") && (
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge variant="secondary\" className="ml-2">
                     {[
                       statusFilter !== "all",
                       sectorFilter !== "all",
