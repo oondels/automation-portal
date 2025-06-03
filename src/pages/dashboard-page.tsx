@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Activity, 
   AlertCircle, 
   ArrowDown, 
   ArrowUp, 
   Clock, 
+  Download,
+  FileDown,
   Filter, 
+  HelpCircle,
+  Info,
   Loader2, 
+  MessageCircle,
   Minus, 
-  Users, 
-  AlertTriangle,
-  Calendar
+  Users 
 } from "lucide-react";
 import { 
   Card, 
@@ -39,158 +42,266 @@ export function DashboardPage() {
   const [urgencyFilter, setUrgencyFilter] = useState<ProjectUrgency | "all">("all");
 
   // Calculate key metrics
-  const totalRequests = projects.length;
+  const totalActive = projects.filter(p => p.status !== "completed" && p.status !== "rejected").length;
   const pendingApproval = projects.filter(p => p.status === "requested").length;
   const inProgress = projects.filter(p => p.status === "in_progress").length;
-  const approvedNotStarted = projects.filter(p => p.status === "approved").length;
-  const teamMembers = 1; // Mock value - replace with actual team size
-  const requestsPerMember = totalRequests > 0 ? (inProgress / teamMembers).toFixed(1) : 0;
-  const isOverloaded = Number(requestsPerMember) > 3; // Threshold of 3 projects per team member
+  const delayed = projects.filter(p => {
+    if (!p.estimatedEndDate || p.status === "completed" || p.status === "rejected") return false;
+    return new Date(p.estimatedEndDate) < new Date();
+  }).length;
 
-  // Status distribution for donut chart
-  const statusData = Object.entries(statuses).map(([key, { label }]) => ({
-    name: label,
-    value: projects.filter(p => p.status === key).length
+  // Team capacity metrics
+  const teamMembers = 3; // Mock value - replace with actual team size
+  const maxProjectsPerMember = 4; // Maximum recommended projects per team member
+  const currentProjectsPerMember = totalActive / teamMembers;
+  const capacityPercentage = (currentProjectsPerMember / maxProjectsPerMember) * 100;
+  const isOverloaded = capacityPercentage > 85;
+
+  // Monthly backlog data (last 6 months)
+  const backlogData = [
+    { month: "Jan", total: 12, completed: 8 },
+    { month: "Feb", total: 15, completed: 10 },
+    { month: "Mar", total: 18, completed: 12 },
+    { month: "Apr", total: 22, completed: 15 },
+    { month: "May", total: 25, completed: 18 },
+    { month: "Jun", total: 28, completed: 20 }
+  ];
+
+  // Project distribution by sector
+  const sectorData = sectors.map(sector => ({
+    name: sector.name,
+    value: projects.filter(p => p.sector === sector.name).length
   }));
 
-  // Weekly requests data (mock data - replace with actual data)
-  const weeklyData = [
-    { week: "Semana 1", requests: 5 },
-    { week: "Semana 2", requests: 8 },
-    { week: "Semana 3", requests: 12 },
-    { week: "Semana 4", requests: 7 },
-    { week: "Semana 5", requests: 15 },
-    { week: "Semana 6", requests: 10 }
-  ];
-
-  // Backlog trend data (mock data - replace with actual data)
-  const backlogData = [
-    { month: "Jan", backlog: 10 },
-    { month: "Feb", backlog: 15 },
-    { month: "Mar", backlog: 25 },
-    { month: "Apr", backlog: 30 },
-    { month: "May", backlog: 40 },
-    { month: "Jun", backlog: 45 }
-  ];
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+  const handleExportReport = () => {
+    // Implementation for report generation would go here
+    console.log("Generating report...");
   };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100 }
-    }
-  };
-
-  const COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#6b7280'];
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-      >
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard de Gerenciamento de Solicitações</h1>
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard de Automação</h1>
           <p className="text-muted-foreground">
-            Monitoramento automático de solicitações de projetos e capacidade da equpe
+            Acompanhamento em tempo real das solicitações e capacidade do setor
           </p>
+        </motion.div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleExportReport}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Exportar Relatório
+          </Button>
+          <Link to="/new-request">
+            <Button>Nova Solicitação</Button>
+          </Link>
         </div>
-        <Link to="/new-request">
-          <Button>New Project Request</Button>
-        </Link>
-      </motion.div>
+      </div>
 
+      {/* Status Banner */}
+      <Card className="border-l-4 border-l-primary bg-primary/5">
+        <CardContent className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-2">
+            <Info className="h-5 w-5 text-primary" />
+            <p className="text-sm">
+              O status das solicitações está sempre atualizado e disponível a todos. 
+              Para saber prazos, consulte esta tela. Para sugestões de melhoria ou dúvidas, utilize o menu de contato.
+            </p>
+          </div>
+          <Button variant="ghost" size="sm">
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Contato
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Capacity Warning */}
       {isOverloaded && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg border-l-4 border-warning bg-warning/10 p-4"
+          className="rounded-lg border-l-4 border-destructive bg-destructive/10 p-4"
         >
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-warning" />
-            <p className="text-sm text-black">
-              Alerta: A equipe está atualmente sobrecarregada com {requestsPerMember} projetos por membro da equipe
-            </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <div>
+                <p className="font-medium text-destructive">
+                  Alerta de Capacidade
+                </p>
+                <p className="text-sm text-destructive/80">
+                  Equipe está operando a {Math.round(capacityPercentage)}% da capacidade recomendada. 
+                  Considere reforço na equipe ou repriorização de demandas.
+                </p>
+              </div>
+            </div>
+            <Button variant="destructive" size="sm">
+              Ver Detalhes
+            </Button>
           </div>
         </motion.div>
       )}
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-      >
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Requisições</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalRequests}</div>
-              <p className="text-xs text-muted-foreground">
-                Todas as solicitações de projetos de automação
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+      {/* Key Metrics Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Solicitações Ativas</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalActive}</div>
+            <p className="text-xs text-muted-foreground">
+              Total de projetos em andamento
+            </p>
+          </CardContent>
+        </Card>
 
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aguardando Aprovação</CardTitle>
-              <Clock className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pendingApproval}</div>
-              <p className="text-xs text-muted-foreground">
-                Aguardando revisão e aprovação
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Aguardando Aprovação</CardTitle>
+            <Clock className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingApproval}</div>
+            <p className="text-xs text-muted-foreground">
+              Solicitações em análise
+            </p>
+          </CardContent>
+        </Card>
 
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Carga da Equipe</CardTitle>
-              <Users className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{requestsPerMember}</div>
-              <p className="text-xs text-muted-foreground">
-                Projetos ativos por membro da Equipe
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Em Progresso</CardTitle>
+            <Activity className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{inProgress}</div>
+            <p className="text-xs text-muted-foreground">
+              Projetos em desenvolvimento
+            </p>
+          </CardContent>
+        </Card>
 
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Atrasados</CardTitle>
+            <AlertCircle className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{delayed}</div>
+            <p className="text-xs text-muted-foreground">
+              Projetos com prazo excedido
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Team Capacity Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Capacidade da Equipe</CardTitle>
+          <CardDescription>
+            Análise da carga atual vs. capacidade recomendada
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Capacidade Atual</p>
+                <p className="text-2xl font-bold">
+                  {currentProjectsPerMember.toFixed(1)} projetos/membro
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Capacidade Recomendada</p>
+                <p className="text-2xl font-bold">
+                  {maxProjectsPerMember} projetos/membro
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Utilização</p>
+                <p className="text-2xl font-bold">
+                  {Math.round(capacityPercentage)}%
+                </p>
+              </div>
+            </div>
+            
+            <div className="h-3 rounded-full bg-muted">
+              <div 
+                className={`h-3 rounded-full transition-all ${
+                  capacityPercentage > 85 
+                    ? 'bg-destructive' 
+                    : capacityPercentage > 70 
+                    ? 'bg-warning' 
+                    : 'bg-success'
+                }`}
+                style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
+              />
+            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              {capacityPercentage > 85 
+                ? "Equipe sobrecarregada. Ação necessária."
+                : capacityPercentage > 70
+                ? "Aproximando do limite. Monitorar."
+                : "Capacidade adequada."}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Charts Grid */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Distribuição de Status do Projeto</CardTitle>
+            <CardTitle>Evolução do Backlog</CardTitle>
             <CardDescription>
-              Estado atual de todas as solicitações de automação
+              Histórico de solicitações vs. entregas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={backlogData}>
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line 
+                  type="monotone" 
+                  dataKey="total" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={2}
+                  name="Total de Solicitações"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="completed" 
+                  stroke="hsl(var(--success))" 
+                  strokeWidth={2}
+                  name="Projetos Concluídos"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribuição por Setor</CardTitle>
+            <CardDescription>
+              Solicitações ativas por área
             </CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={statusData}
+                  data={sectorData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -198,8 +309,11 @@ export function DashboardPage() {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {sectorData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={`hsl(${index * 360 / sectorData.length}, 70%, 50%)`} 
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -207,99 +321,7 @@ export function DashboardPage() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Trends de Solicitações Semanais</CardTitle>
-            <CardDescription>
-              Novas solicitações de automação por semana
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
-                <XAxis dataKey="week" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="requests" fill="hsl(var(--primary))">
-                  {weeklyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Tendência de crescimento do backlog</CardTitle>
-          <CardDescription>
-            Cumulativo de backlog de projetos ao longo do tempo
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={backlogData}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="backlog" 
-                stroke="hsl(var(--primary))" 
-                strokeWidth={2}
-                dot={{ fill: "hsl(var(--primary))" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Visão Geral da Capacidade da Equipe</CardTitle>
-          <CardDescription>
-            Alocação e capacidade de recursos atuais
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Membros da Equipe</p>
-                <p className="text-2xl font-bold">{teamMembers}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Projetos Ativos</p>
-                <p className="text-2xl font-bold">{inProgress}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Projetos por Membro</p>
-                <p className="text-2xl font-bold">{requestsPerMember}</p>
-              </div>
-            </div>
-            
-            <div className="h-3 rounded-full bg-muted">
-              <div 
-                className={`h-3 rounded-full transition-all ${
-                  isOverloaded ? 'bg-destructive' : 'bg-primary'
-                }`}
-                style={{ 
-                  width: `${Math.min((Number(requestsPerMember) / 3) * 100, 100)}%` 
-                }}
-              />
-            </div>
-            
-            <p className="text-sm text-muted-foreground">
-              {isOverloaded 
-                ? "A equipe está sobrecarregada. Considere adicionar mais recursos."
-                : "Capacidade da equipe está dentro dos limites aceitáveis."}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
