@@ -6,7 +6,7 @@ import { useAuth } from "../context/auth-context";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Activity } from "lucide-react";
+import { BrainCircuit } from "lucide-react";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -20,15 +20,10 @@ export function LoginPage() {
     setIsSubmitting(true);
     
     try {
-      const success = await login(email, password);
-      if (success) {
-        toast.success("Login successful!");
-        navigate("/dashboard");
-      } else {
-        toast.error(error || "Login failed. Please try again.");
-      }
+      await login(email, password);
+      navigate("/dashboard");
     } catch (err) {
-      toast.error("An unexpected error occurred.");
+      console.error("Erro no login: ", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -58,14 +53,14 @@ export function LoginPage() {
               className="mb-8 flex justify-center"
             >
               <div className="rounded-full bg-primary p-3 text-white">
-                <Activity size={40} />
+                <BrainCircuit size={40} />
               </div>
             </motion.div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              ProcessHub
+              Dass Automação
             </h1>
             <p className="mt-6 text-lg text-muted-foreground">
-              Streamlining industrial process automation management for greater efficiency
+              Simplificando a gestão da automação de processos industriais para maior eficiência
             </p>
           </motion.div>
         </div>
@@ -80,10 +75,10 @@ export function LoginPage() {
         >
           <div className="text-center">
             <h2 className="mt-6 text-3xl font-extrabold text-foreground">
-              Sign in to your account
+              Faça login na sua conta
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Enter your credentials to access the dashboard
+              Insira suas credenciais para acessar o painel
             </p>
           </div>
 
@@ -96,10 +91,10 @@ export function LoginPage() {
           >
             <div className="space-y-4 rounded-lg border bg-card p-6 shadow-sm">
               <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
+                <Label htmlFor="email">Usuário Dass</Label>
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -109,9 +104,9 @@ export function LoginPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Senha</Label>
                   <Button variant="link" type="button" className="h-auto p-0 text-xs">
-                    Forgot password?
+                    Esqueceu a senha?
                   </Button>
                 </div>
                 <Input
@@ -130,6 +125,7 @@ export function LoginPage() {
                 type="submit"
                 className="w-full"
                 disabled={isSubmitting}
+                onSubmit={handleSubmit}
               >
                 {isSubmitting ? (
                   <motion.div
@@ -138,16 +134,7 @@ export function LoginPage() {
                     className="mr-2 h-4 w-4 border-2 border-t-transparent border-white rounded-full"
                   />
                 ) : null}
-                {isSubmitting ? "Signing in..." : "Sign in"}
-              </Button>
-              
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleDemo}
-              >
-                Use demo account
+                {isSubmitting ? "Fazendo login..." : "Entrar"}
               </Button>
             </div>
           </motion.form>
