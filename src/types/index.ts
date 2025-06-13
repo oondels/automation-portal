@@ -1,9 +1,17 @@
 export type User = {
   id: string;
-  name: string;
-  email: string;
+  nome: string;
+  usuario: string;
+  email?: string;
+  haveemail: boolean;
   avatar?: string;
-  role: "coordinator" | "manager" | "admin";
+  funcao: string;
+  nivel: string;
+  matricula: string;
+  codbarras: string;
+  rfid: string;
+  setor: string;
+  unidade: string;
 };
 
 export type ProjectStatus = "requested" | "approved" | "in_progress" | "paused" | "completed" | "rejected";
@@ -14,29 +22,33 @@ export type Project = {
   id: string;
   name: string;
   sector: string;
-  cell: string;
+  cell?: string;
   status: ProjectStatus;
   urgency: ProjectUrgency;
   startDate?: string;
   endDate?: string;
-  estimatedEndDate: string;
+  estimatedEndDate?: string;
   description: string;
-  expectedGains: {
+  projectType: string;
+  projectTags: string[];
+  expectedGains?: {
     people?: boolean;
     costs?: boolean;
     ergonomics?: boolean;
     [key: string]: boolean | undefined;
   };
   requestedBy: string;
-  approvedBy?: string;
-  timeline: TimelineEvent[];
-  logs: LogEntry[];
+  approvedBy?: string | null;
+  approvedAt?: Date | string | null;
+  concludedAt?: Date | string | null;
+  timeline?: TimelineEvent[];
+  logs?: LogEntry[];
 };
 
 export type TimelineEvent = {
   id: string;
   projectId: string;
-  type: "request" | "approval" | "start" | "pause" | "resume" | "completion" | "rejection";
+  type: string;
   date: string;
   userId: string;
   comment?: string;
