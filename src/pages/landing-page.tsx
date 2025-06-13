@@ -9,9 +9,7 @@ import {
   Factory,
   Fingerprint,
   Gauge,
-  GitBranch,
-  Laptop,
-  Lightbulb,
+  BrainCircuit,
   Rocket,
   Timer,
   Workflow,
@@ -26,10 +24,9 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-15"
           style={{
-            backgroundImage:
-              "url(https://images.pexels.com/photos/2159/flight-sky-earth-space.jpg?auto=compress&cs=tinysrgb&w=1920)",
+            backgroundImage: "url(/images/bg.png)",
           }}
         />
         <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
@@ -46,14 +43,15 @@ export function LandingPage() {
               className="mx-auto mb-8 flex justify-center"
             >
               <div className="rounded-2xl bg-primary/10 p-3">
-                <Activity className="h-12 w-12 text-primary" />
+                {/* <Activity className="h-12 w-12 text-primary" /> */}
+                <BrainCircuit className="h-12 w-12 text-primary" />
               </div>
             </motion.div>
             <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl">
               Bem Vindo ao Portal de Automação
               <span className="block text-primary">Dass Santo Estêvão</span>
             </h1>
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
+            <p className="mx-auto mb-8 max-w-2xl text-lg text">
               Onde a inovação encontra a eficiência Industrial. Transformando processos e
               impulsionando a produtividade através da automação inteligente.
             </p>

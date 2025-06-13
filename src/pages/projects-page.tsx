@@ -8,17 +8,11 @@ import {
   ArrowUp,
   Calendar,
   Clock,
-  Filter,
   Grid,
-  HelpCircle,
-  Info,
-  Loader2,
-  MessageCircle,
   Minus,
   Plus,
   Search,
   SlidersHorizontal,
-  Users,
   X
 } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -62,7 +56,7 @@ export function ProjectsPage() {
       project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.cell.toLowerCase().includes(searchTerm.toLowerCase());
+      project?.cell?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || project.status === statusFilter;
     const matchesSector = sectorFilter === "all" || project.sector === sectorFilter;
@@ -81,11 +75,11 @@ export function ProjectsPage() {
   // Get urgency icon and color
   const getUrgencyInfo = (urgency: ProjectUrgency) => {
     switch (urgency) {
-      case "high":
+      case "alta":
         return { icon: <ArrowUp className="h-4 w-4" />, color: "text-destructive" };
-      case "medium":
+      case "media":
         return { icon: <Minus className="h-4 w-4" />, color: "text-warning" };
-      case "low":
+      case "baixa":
         return { icon: <ArrowDown className="h-4 w-4" />, color: "text-success" };
     }
   };
@@ -100,7 +94,7 @@ export function ProjectsPage() {
     const elapsed = today.getTime() - startDate.getTime();
     const progress = Math.min(Math.max((elapsed / total) * 100, 0), 100);
     
-    const isDelayed = today > endDate;
+    const isDelayed = today > endDate && project.status !== 'completed';
     
     return { progress, isDelayed };
   };
@@ -283,7 +277,7 @@ export function ProjectsPage() {
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Filtros
                 {(statusFilter !== "all" || sectorFilter !== "all" || urgencyFilter !== "all") && (
-                  <Badge variant="secondary\" className="ml-2">
+                  <Badge variant="secondary" className="ml-2">
                     {[
                       statusFilter !== "all",
                       sectorFilter !== "all",
@@ -480,7 +474,7 @@ export function ProjectsPage() {
                               />
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              {Math.round(progress)}% concluído
+                              {Math.round(progress)}% decorrido
                             </p>
                           </div>
                         </td>

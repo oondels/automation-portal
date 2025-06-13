@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { User } from "../types";
-import { users } from "../data/mockData";
-import { authApi } from "../services/httpClient";
+import { authService } from "../services/AuthService";
 
 interface AuthContextType {
   user: User | null;
@@ -32,25 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      const response = await authApi.post("/auth/login", {
-        usuario: email,
-        senha: password,
-      });
+      const user = await authService.login(email, password);
 
-      const decodedUser = JSON.parse(atob(response.data?.userData)); // decodifica de base64
-      
-      setUser(decodedUser);
-      localStorage.setItem("user", JSON.stringify(decodedUser));
       setUser(user);
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        setError("Credenciais inválidas");
-      } else {
-        setError("Erro no servidor. Tente novamente.");
-      }
-
-      // Re-propagar o erro para que o componente possa capturá-lo
-      throw error;
+    } catch (e: any) {
+      setError(e?.response?.status === 401 ? "Credenciais inválidas" : "Falha no servidor");
+      throw e; // deixa consumidor decidir o que fazer (toast etc.)
     } finally {
       setIsLoading(false);
     }

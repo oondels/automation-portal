@@ -4,7 +4,7 @@ import { mockProjects } from "../data/mockData";
 
 interface ProjectsContextType {
   projects: Project[];
-  addProject: (project: Omit<Project, "id" | "timeline" | "logs">) => Project;
+  addProject: (project: Omit<Project, "id" >) => Project;
   updateProjectStatus: (
     projectId: string,
     status: ProjectStatus,
@@ -20,7 +20,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   const [projects, setProjects] = useState<Project[]>(mockProjects);
 
   const addProject = (
-    projectData: Omit<Project, "id" | "timeline" | "logs">
+    projectData: Omit<Project, "id">
   ): Project => {
     const newProject: Project = {
       ...projectData,
