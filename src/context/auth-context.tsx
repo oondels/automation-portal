@@ -39,10 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(user);
     } catch (e: unknown) {
       const error = e as { response?: { status?: number, data?: string } };
-      const errorMessage = error?.response?.status === 401 ? error?.response?.data : "Credenciais inválidas";
-      console.log(error?.response);
+      const errorMessage = error?.response?.status === 401 ? error?.response?.data : "Erro ao efetuar login, tente novamente em alguns instantes.";
 
-      notification.error('Falha no Login', errorMessage || 'Please check your credentials.', 5000);
+      notification.error('Falha no Login', errorMessage || 'Erro interno no servidor de autenticação.', 5000);
       throw e;
     } finally {
       setIsLoading(false);

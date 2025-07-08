@@ -7,10 +7,10 @@ class AuthService {
     const response = await authApi.post("/auth/login", {
       usuario,
       senha
-    });
+    },
+      { withCredentials: true });
 
-    console.log(response.data)
-    const decodedUser = JSON.parse(atob(response.data?.userData)); // decodifica de base64
+    const decodedUser = JSON.parse(atob(response.data?.userData));
     localStorage.setItem(this.storageKey, JSON.stringify(decodedUser));
 
     return decodedUser;
