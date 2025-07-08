@@ -9,6 +9,7 @@ import { DashboardPage } from "./pages/dashboard-page";
 import { NewRequestPage } from "./pages/new-request-page";
 import { ProjectsPage } from "./pages/projects-page";
 import { MainLayout } from "./components/layout/main-layout";
+import { NotificationContainer } from "./components/Notification";
 
 // Protected route component
 type ProtectedRouteProps = {
@@ -71,6 +72,7 @@ function App() {
 
               <Route path="*" element={<Navigate to="/\" replace />} />
             </Routes>
+            <NotificationContainer/>
           </Router>
         </ProjectsProvider>
       </AuthProvider>
