@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/auth-context";
 import { Button } from "../components/ui/button";
@@ -21,18 +20,15 @@ export function LoginPage() {
     
     try {
       await login(email, password);
-      navigate("/dashboard");
+      
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1300);
     } catch (err) {
-      console.error("Erro no login: ", err);
+      console.error("Erro ao efetuar login: ", err);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // For demo purposes - prefill login details
-  const handleDemo = () => {
-    setEmail("john.doe@example.com");
-    setPassword("password");
   };
 
   return (
@@ -139,6 +135,7 @@ export function LoginPage() {
             </div>
           </motion.form>
         </motion.div>
+
       </div>
     </div>
   );

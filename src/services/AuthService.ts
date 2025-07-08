@@ -4,8 +4,6 @@ class AuthService {
   private storageKey = "user";
 
   async login(usuario: string, senha: string) {
-    console.log("logging...");
-
     const response = await authApi.post("/auth/login", {
       usuario,
       senha

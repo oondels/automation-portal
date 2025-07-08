@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "sonner";
 import { User } from "../types";
 import { authService } from "../services/AuthService";
+import notification from "../components/Notification";
 
 interface AuthContextType {
   user: User | null;
@@ -33,37 +35,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const user = await authService.login(email, password);
 
+      notification.success('Sucesso!', "Login realizado com sucesso!", 2000);
       setUser(user);
-    } catch (e: any) {
-      setError(e?.response?.status === 401 ? "Credenciais inválidas" : "Falha no servidor");
-      throw e; // deixa consumidor decidir o que fazer (toast etc.)
+    } catch (e: unknown) {
+      const error = e as { response?: { status?: number, data?: string } };
+      const errorMessage = error?.response?.status === 401 ? error?.response?.data : "Credenciais inválidas";
+      console.log(error?.response);
+
+      notification.error('Falha no Login', errorMessage || 'Please check your credentials.', 5000);
+      throw e;
     } finally {
       setIsLoading(false);
     }
-
-    // return new Promise((resolve) => {
-    //   // Simulate API call
-    //   setTimeout(() => {
-    //     // Simple authentication logic
-    //     const foundUser = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-
-    //     if (foundUser && password === "password") {
-    //       setUser(foundUser);
-    //       localStorage.setItem("user", JSON.stringify(foundUser));
-    //       setIsLoading(false);
-    //       resolve(true);
-    //     } else {
-    //       setError("Invalid email or password");
-    //       setIsLoading(false);
-    //       resolve(false);
-    //     }
-    //   }, 1000);
-    // });
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    toast.success("Logout realizado com sucesso!");
   };
 
   return <AuthContext.Provider value={{ user, login, logout, isLoading, error }}>{children}</AuthContext.Provider>;
