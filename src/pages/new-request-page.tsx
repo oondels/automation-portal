@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 import { BrainCircuit, MessageCircleQuestion, Clock, Factory, FileText, Layers, MapPin, Tags } from "lucide-react";
-import { useProjects } from "../context/projects-context";
 import { useAuth } from "../context/auth-context";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -15,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { sectors } from "../data/mockData";
 import { Project, ProjectUrgency } from "../types";
 import { Tooltip } from "../components/ui/tooltip";
+import notificaiton from "../components/Notification";
 
 const projectTypes = [
   { id: "app_dev", label: "Desenvolvimento de Aplicativo" },
@@ -36,7 +35,6 @@ const expectedGains = [
 
 export function NewRequestPage() {
   const navigate = useNavigate();
-  const { addProject } = useProjects();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -75,7 +73,6 @@ export function NewRequestPage() {
     // }
 
     setIsSubmitting(true);
-
     try {
       const expectedGainsObject = expectedGains.reduce(
         (acc, gain) => ({
@@ -85,22 +82,22 @@ export function NewRequestPage() {
         {}
       );
 
-      console.log("Project data: ");
-      
-      console.log({
+      const requestData = {
         name: formData.name,
         sector: formData.sector,
         cell: formData.cell,
         status: "requested",
         urgency: formData.urgency,
         description: formData.description,
-        projectType: "type",
+        projectType: formData.projectType,
         projectTags: [],
         expectedGains: expectedGainsObject,
         requestedBy: user?.id || "",
         estimatedEndDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-      });
+      };
 
+      console.log("Project data: ");
+      console.log(requestData);
       // const newProject = addProject({
       //   name: formData.name,
       //   sector: formData.sector,
@@ -114,11 +111,18 @@ export function NewRequestPage() {
       //   requestedBy: user?.id || "",
       //   estimatedEndDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       // });
-
-      // toast.success("Project request submitted successfully!");
+      notificaiton.success(
+        "Solicitação de projeto enviada com sucesso!",
+        "Sua solicitação foi registrada e está sendo processada.",
+        3000
+      );
       // navigate(`/projects/${newProject.id}`);
     } catch (error) {
-      toast.error("Failed to submit project request");
+      notificaiton.error(
+        "Erro ao enviar solicitação de projeto",
+        "Sua solicitação não pôde ser processada. Tente novamente mais tarde.",
+        5000
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -133,10 +137,12 @@ export function NewRequestPage() {
               Nova Solicitação de Projeto
             </h1>
             <p className="text-muted-foreground mt-2">
+              {/* TODO: Mostrar tipo de projeto dinamicamente de acordo com a escolha do usuario, exemplo: projeto de automação ou projeto de marcenaria */}
               Envie uma nova solicitação de projeto de automação para revisão
             </p>
           </div>
           <div className="hidden md:flex items-center justify-center h-16 w-16 rounded-full bg-primary/10">
+            {/* TODO: Alterar ícone dinâmicamente de acordo com o tipo de slicitação, exemplo: Automação, Marcenaria, Serralheria, etc */}
             <BrainCircuit className="h-8 w-8 text-primary" />
           </div>
         </div>

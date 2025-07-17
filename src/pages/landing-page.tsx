@@ -43,17 +43,18 @@ export function LandingPage() {
               className="mx-auto mb-8 flex justify-center"
             >
               <div className="rounded-2xl bg-primary/10 p-3">
-                {/* <Activity className="h-12 w-12 text-primary" /> */}
+                {/* TODO: Alterar ícone dinâmicamente de acordo com o tipo de slicitação, exemplo: Automação, Marcenaria, Serralheria, etc */}
                 <BrainCircuit className="h-12 w-12 text-primary" />
               </div>
             </motion.div>
             <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-              Bem Vindo ao Portal de Automação
+              Bem Vindo ao Portal de Solicitações
+              {/* TODO: Fazer reconhecimento de Unidade de forma dinâmica */}
               <span className="block text-primary">Dass Santo Estêvão</span>
             </h1>
             <p className="mx-auto mb-8 max-w-2xl text-lg text">
-              Onde a inovação encontra a eficiência Industrial. Transformando processos e
-              impulsionando a produtividade através da automação inteligente.
+              Onde a inovação encontra a eficiência Industrial. Transformando processos e impulsionando a produtividade
+              através da automação inteligente.
             </p>
             <div className="flex justify-center gap-4">
               <Link to="/login">
@@ -83,9 +84,7 @@ export function LandingPage() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h2 className="mb-12 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Sobre o Portal
-            </h2>
+            <h2 className="mb-12 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Sobre o Portal</h2>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardContent className="flex flex-col items-center p-6">
@@ -94,8 +93,7 @@ export function LandingPage() {
                   </div>
                   <h3 className="mb-2 text-xl font-semibold">Gestão Simplificada</h3>
                   <p className="text-center text-muted-foreground">
-                    Acompanhe e gerencie projetos de automação de forma eficiente e
-                    transparente.
+                    Acompanhe e gerencie projetos de automação de forma eficiente e transparente.
                   </p>
                 </CardContent>
               </Card>
@@ -155,8 +153,8 @@ export function LandingPage() {
                     </div>
                   </div>
                   <p className="mt-4 text-muted-foreground">
-                    Responsável pela estratégia e coordenação dos projetos de automação,
-                    garantindo alinhamento com os objetivos do negócio.
+                    Responsável pela estratégia e coordenação dos projetos de automação, garantindo alinhamento com os
+                    objetivos do negócio.
                   </p>
                 </CardContent>
               </Card>
@@ -181,8 +179,8 @@ export function LandingPage() {
                     </div>
                   </div>
                   <p className="mt-4 text-muted-foreground">
-                    Desenvolvedor fullstack especializado em automação industrial e IoT,
-                    responsável pela implementação técnica das soluções.
+                    Desenvolvedor fullstack especializado em automação industrial e IoT, responsável pela implementação
+                    técnica das soluções.
                   </p>
                 </CardContent>
               </Card>
@@ -254,14 +252,9 @@ export function LandingPage() {
               <span className="text-xl font-bold">Dass Santo Estêvão</span>
             </div>
             <div className="flex flex-col items-center gap-2 sm:flex-row">
-              <p className="text-sm text-muted-foreground">
-                Contato: TI e Automação - Ramal 123
-              </p>
+              <p className="text-sm text-muted-foreground">Contato: TI e Automação - Ramal 123</p>
               <span className="hidden sm:inline text-muted-foreground">•</span>
-              <Link
-                to="/login"
-                className="text-sm text-primary hover:text-primary/80"
-              >
+              <Link to="/login" className="text-sm text-primary hover:text-primary/80">
                 Acesso Interno
               </Link>
             </div>
