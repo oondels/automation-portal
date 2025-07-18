@@ -12,7 +12,7 @@ export const AppDataSource = new DataSource({
   password: config.database.password,
   database: config.database.name,
   synchronize: config.env === 'development', // Keep just in development mode
-  logging: config.env === 'development',
+  logging: false,
   entities: [Project, Team, User],
   subscribers: [],
   migrations: [],
