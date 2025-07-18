@@ -12,7 +12,6 @@ import { Team } from './Team';
 import { Project } from './Project';
 
 @Entity({ name: 'usuarios', schema: 'autenticacao' })
-@Index('user_registration_unique', ['matricula'], { unique: true })
 export class User {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id!: string;
@@ -27,7 +26,7 @@ export class User {
   codigoBarras!: string;
 
   @Column({ type: 'bigint', unique: true })
-  matricula!: string;
+  matricula!: number;
 
   @Column({ type: 'varchar', nullable: true })
   nome!: string;
