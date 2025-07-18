@@ -10,28 +10,7 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { Team } from './Team';
-
-export enum ProjectUrgency {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-}
-
-export enum ProjectStatus {
-  REQUESTED = 'requested',
-  APPROVED = 'approved',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-}
-
-export enum ProjectType {
-  APP_DEVELOPMENT = 'app_development',
-  PROCESS_AUTOMATION = 'process_automation',
-  APP_IMPROVEMENT = 'app_improvement',
-  APP_FIX = 'app_fix',
-  METALWORK = 'metalwork', // serralheria
-  CARPENTRY = 'carpentry', // marcenaria
-}
+import { ProjectUrgency, ProjectType, ProjectStatus } from '../types/project';
 
 @Entity({ schema: 'automacao', name: 'projects' })
 export class Project {
@@ -64,10 +43,10 @@ export class Project {
     nullable: true,
     default: () => 'CURRENT_TIMESTAMP',
   })
-  startdate?: Date;
+  startDate?: Date;
 
-  @Column({ name: 'estimated_end_date', type: 'timestamp' })
-  estimatedEndDate!: Date;
+  @Column({ name: 'estimated_duration_time', type: 'interval', default: () => "'0 days'" })
+  estimatedDurationTime?: string;
 
   @Column({
     type: 'enum',
@@ -124,9 +103,9 @@ export class Project {
   })
   recordedPauses!: Date[];
 
-  @ManyToOne(() => Team, team => team.projects, { nullable: false })
+  @ManyToOne(() => Team, team => team.projects, { nullable: true })
   @JoinColumn({ name: 'automation_team_id' })
-  automationTeam!: Team;
+  automationTeam?: Team;
 
   @Column({ name: 'concluded_at', type: 'timestamp', nullable: true })
   concludedAt?: Date;

@@ -1,12 +1,8 @@
-import Router, { Request, Response, NextFunction } from "express"
+import Router from "express"
+import { ProjectController } from "../controllers/project.controller";
 
-export const projectRoute = Router()
+export const projectRoute = Router();
+const projectController = new ProjectController();
 
-projectRoute.post("/", (req: Request, res: Response, next: NextFunction) => {
-  try {
-    console.log(req.body)
-  }
-  catch (error) {
-    next(error)
-  }
-})
+// Create a new project
+projectRoute.post("/", projectController.newProject.bind(projectController));
