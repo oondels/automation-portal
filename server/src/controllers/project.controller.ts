@@ -9,7 +9,7 @@ export class ProjectController {
     this.projectService = new ProjectService();
   }
 
-  // TODO: Make a middleware to validate CreateProjectDTO
+  // TODO: Add notification system to notify users when a project is created
   async newProject(req: Request, res: Response, next: NextFunction) {
     const projectData: CreateProjectDTO = req.body;
 
@@ -26,6 +26,26 @@ export class ProjectController {
           urgency: project.urgency,
           type: project.projectType,
           startDate: project.startDate,
+        }
+      });
+      return
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async approveProject(req: Request, res: Response, next: NextFunction) {
+    const projectId = req.params.id;
+    const username = req.user?.usuario as string
+    const { status, urgency } = req.body;
+
+    try {
+      const project = await this.projectService.approveProject(projectId, username, status, urgency);
+
+      res.status(200).json({
+        message: `Project approved successfully`,
+        data: {
+          status: project.status,
         }
       });
       return
