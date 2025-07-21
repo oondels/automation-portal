@@ -40,6 +40,10 @@ const envSchema = Joi.object({
   DATABASE_NAME: Joi.string()
     .required()
     .description('Database connection name'),
+
+  JWT_SECRET: Joi.string()
+    .required()
+    .description("Auth Secret Key")
 })
   .unknown()         // allow extra env vars
   .required();
@@ -58,6 +62,7 @@ if (error) {
 export const config = {
   env: envVars.NODE_ENV as 'development' | 'production' | 'test',
   port: envVars.PORT as number,
+  secret_key: envVars.JWT_SECRET as string,
   database: {
     host: envVars.DATABASE_HOST as string,
     port: envVars.DATABASE_PORT as number,

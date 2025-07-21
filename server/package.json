@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.14.0",
     "@types/pg": "^8.11.11",
     "@types/winston": "^2.4.4",
