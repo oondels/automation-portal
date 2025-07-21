@@ -58,8 +58,6 @@ export class ProjectController {
     try {
       const projectId = req.params.id;
       const { estimatedDurationTime } = req.body
-      console.log(`Id: ${projectId}`);
-      console.log(`Estimated time: ${estimatedDurationTime}`);
 
       await this.projectService.updateEstimatedTime(projectId, estimatedDurationTime);
 

@@ -15,5 +15,7 @@ projectRoute.post("/", AuthMiddleware, projectController.newProject.bind(project
 projectRoute.patch("/:id/approval", AuthMiddleware, CheckPermission("approveProject", "gerente"),
   validateRequest(projectValidationSchema), projectController.approveProject.bind(projectController));
 
+
+// TODO: Criar DTO para verificação de dados
 projectRoute.patch("/:id/estimatedTime", AuthMiddleware, CheckPermission("updateEstimatedTime"),
   validateRequest(estimatedTimeSchema), projectController.updateEstimatedTime.bind(projectController));
