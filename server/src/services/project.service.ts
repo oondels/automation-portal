@@ -65,4 +65,23 @@ export class ProjectService {
       throw new AppError("Error updating project status.")
     }
   }
+
+  async updateEstimatedTime(projectId: string, estimatedTime: string): Promise<void> {
+    try {
+      const project = await this.projectRepository.findOne({ where: { id: projectId } })
+      if (!project) {
+        throw new AppError("Project not found.", 404)
+      }
+
+      project.estimatedDurationTime = estimatedTime
+      project.updatedAt = new Date()
+
+      await this.projectRepository.save(project)
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      console.error("Error updating project estimated time:", error);
+
+      throw new AppError("Error updating project estimated time.")
+    }
+  }
 }

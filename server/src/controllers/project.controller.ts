@@ -1,5 +1,5 @@
 import { ProjectService } from "../services/project.service";
-import { Request, Response, NextFunction } from "express";      
+import { Request, Response, NextFunction } from "express";
 import { CreateProjectDTO } from "../types/project";
 
 export class ProjectController {
@@ -47,6 +47,24 @@ export class ProjectController {
         data: {
           status: project.status,
         }
+      });
+      return
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateEstimatedTime(req: Request, res: Response, next: NextFunction) {
+    try {
+      const projectId = req.params.id;
+      const { estimatedDurationTime } = req.body
+      console.log(`Id: ${projectId}`);
+      console.log(`Estimated time: ${estimatedDurationTime}`);
+
+      await this.projectService.updateEstimatedTime(projectId, estimatedDurationTime);
+
+      res.status(200).json({
+        message: `Project estimated time updated successfully`,
       });
       return
     } catch (error) {
