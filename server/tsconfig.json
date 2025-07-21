@@ -6,6 +6,7 @@
     "emitDecoratorMetadata": true,
     "rootDir": "./src",
     "outDir": "./dist",
+    "baseUrl": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -14,7 +15,7 @@
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "types": ["express", "node"]
   },
-  "include": ["src/**/*", "src/types/**/*"],
+  "include": ["src/**/*.ts", "src/types/**/*"],
   "exclude": ["node_modules", "dist"]
 }
  
