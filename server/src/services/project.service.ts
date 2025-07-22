@@ -93,6 +93,7 @@ export class ProjectService {
       const project = await this.getProject(projectId)
 
       if (project.status !== ProjectStatus.APPROVED) throw new AppError("Only projects with status 'approved' can be attended!")
+      if (!project.estimatedDurationTime || project.estimatedDurationTime === "00:00:00") throw new AppError("Only projects with defined estimated duration time can be attended!");
 
       let teammate;
       if (service === "automation") {
