@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { Team } from './Team';
-import { ProjectUrgency, ProjectType, ProjectStatus } from '../types/project';
+import { ProjectUrgency, ProjectType, ProjectStatus, PauseRecord } from '../types/project';
 
 @Entity({ schema: 'automacao', name: 'projects' })
 export class Project {
@@ -97,10 +97,9 @@ export class Project {
   @Column({
     name: 'recorded_pauses',
     type: 'jsonb',
-    nullable: true,
     default: () => `'[]'`,
   })
-  recordedPauses!: Date[];
+  recordedPauses!: PauseRecord[];
 
   @ManyToOne(() => Team, team => team.projects, { nullable: true })
   @JoinColumn({ name: 'automation_team_id' })

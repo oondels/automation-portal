@@ -38,7 +38,13 @@ export interface CreateProjectDTO {
   approvedBy?: string;
   approvedAt?: Date;
   pausedAt?: Date;
-  recordedPauses?: string[];
+  recordedPauses?: PauseRecord[];
   automationTeamId?: string;
   concludedAt?: Date;
+}
+
+export interface PauseRecord {
+  timestamp: Date;
+  reason:    string;
+  user:      string;
 }
