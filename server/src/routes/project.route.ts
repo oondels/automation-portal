@@ -22,3 +22,5 @@ projectRoute.patch("/:id/estimated-time", AuthMiddleware, CheckPermission("updat
 // TODO: Criar DTO para verificação de dados se necessariostat
 // AuthMiddleware, CheckPermission("attendProject"),
 projectRoute.put("/:id/attend/:service", projectController.attendProject.bind(projectController))
+
+projectRoute.put("/:id/pause/:service", AuthMiddleware, projectController.pauseProject.bind(projectController))

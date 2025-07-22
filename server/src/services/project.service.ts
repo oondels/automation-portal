@@ -4,9 +4,7 @@ import { Project } from "../models/Project";
 import { Team } from "../models/Team";
 import { Repository } from "typeorm";
 import { AppError } from "../utils/AppError";
-import { CreateProjectDTO } from "../types/project";
-import { ProjectStatus } from "../types/project";
-import { ProjectUrgency } from "../types/project";
+import { ProjectStatus, ProjectUrgency, PauseRecord, CreateProjectDTO } from "../types/project";
 
 export class ProjectService {
   private projectRepository: Repository<Project>
@@ -20,7 +18,10 @@ export class ProjectService {
   }
 
   async getProject(id: string): Promise<Project> {
-    const project = await this.projectRepository.findOne({ where: { id: id } })
+    const project = await this.projectRepository.findOne({
+      where: { id: id },
+      relations: ['automationTeam', 'requestedBy']
+    })
     if (!project) {
       throw new AppError("Project not found.", 404)
     }
@@ -117,6 +118,36 @@ export class ProjectService {
       console.error("Error attending project:", error);
 
       throw new AppError("Error attending project.");
+    }
+  }
+
+  async pause(projectId: string, user: User, service: string, reason: string) {
+    try {
+      const project = await this.getProject(projectId)
+
+      if (project.status !== ProjectStatus.IN_PROGRESS) throw new AppError("Only projects with status 'in_progress' can be paused!")
+      if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
+        throw new AppError("Only the user attending the request can pause it.", 401)
+      }
+
+      project.recordedPauses = project.recordedPauses ?? [];
+      // TODO: Fix the timestamp calculation
+      const now = new Date()
+      const pause: PauseRecord = {
+        timestamp: now,
+        reason: reason,
+        user: user.usuario
+      }
+      project.updatedAt = now
+      project.status = ProjectStatus.PAUSED
+      project.recordedPauses.push(pause)
+
+      await this.projectRepository.save(project)
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      console.error("Error pausing project:", error);
+
+      throw new AppError("Error pausing project.");
     }
   }
 }

@@ -1,12 +1,22 @@
 import { ProjectService } from "../services/project.service";
 import { Request, Response, NextFunction } from "express";
 import { CreateProjectDTO } from "../types/project";
+import { AppError } from "../utils/AppError";
+import { User } from "models/User";
 
 export class ProjectController {
   private projectService: ProjectService;
+  private allowedServices: string[];
 
   constructor() {
     this.projectService = new ProjectService();
+    this.allowedServices = ["automation", "carpentry", "metalwork"]
+  }
+
+  checkService(service: string): void {
+    if (!this.allowedServices.includes(service)) {
+      throw new AppError("Service type not allowed!", 400)
+    }
   }
 
   // TODO: Add notification system to notify users when a project is created
@@ -75,21 +85,32 @@ export class ProjectController {
       const { id, service } = req.params
       const registration = req.user?.matricula as number
 
-      const allowedServices: string[] = ["automation", "carpentry", "metalwork"]
-      if (!allowedServices.includes(service)) {
-        res.status(400).json({ message: "Invalid Service Type." })
-        return
-      }
-
+      this.checkService(service)
       const project = await this.projectService.attend(id, registration, service)
 
-      res.status(200).json({ 
-        message: "Project status updated successfully.", 
+      res.status(200).json({
+        message: "Project status updated successfully.",
         data: {
           status: project.status,
           start: project.startDate,
         }
-       })
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async pauseProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id, service } = req.params
+      const user = req.user as User
+      const { reason } = req.body
+
+      this.checkService(service)
+      const project = await this.projectService.pause(id, user, service, reason)
+
+      res.status(200).json({ message: "Project paused successfully." })
+      return
     } catch (error) {
       next(error)
     }
