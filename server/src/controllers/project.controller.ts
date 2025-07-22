@@ -100,6 +100,7 @@ export class ProjectController {
     }
   }
 
+  // TODO: Fix project pause time
   async pauseProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { id, service } = req.params
@@ -110,6 +111,28 @@ export class ProjectController {
       const project = await this.projectService.pause(id, user, service, reason)
 
       res.status(200).json({ message: "Project paused successfully." })
+      return
+    } catch (error) {
+      next(error)
+    }
+  }
+  
+  // TODO: Fix project pause time
+  async resumeProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id, service } = req.params
+      const user = req.user as User
+
+      this.checkService(service)
+      const project = await this.projectService.resume(id, user, service)
+
+      res.status(200).json({
+        message: "Project resumed successfully.",
+        data: {
+          status: project.status,
+          resumedAt: project.updatedAt,
+        }
+      })
       return
     } catch (error) {
       next(error)

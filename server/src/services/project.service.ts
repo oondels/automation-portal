@@ -134,7 +134,7 @@ export class ProjectService {
       // TODO: Fix the timestamp calculation
       const now = new Date()
       const pause: PauseRecord = {
-        timestamp: now,
+        start: now,
         reason: reason,
         user: user.usuario
       }
@@ -148,6 +148,40 @@ export class ProjectService {
       console.error("Error pausing project:", error);
 
       throw new AppError("Error pausing project.");
+    }
+  }
+
+  async resume(projectId: string, user: User, service: string): Promise<Project> {
+    try {
+      const project = await this.getProject(projectId)
+
+      if (project.status !== ProjectStatus.PAUSED) throw new AppError("Only projects with status 'paused' can be resumed!")
+      if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
+        throw new AppError("Only the user attending the request can resume it.", 401)
+      }
+
+      project.recordedPauses = project.recordedPauses ?? [];
+      
+      // Find the last pause record and add the end timestamp
+      if (project.recordedPauses.length > 0) {
+        const lastPause = project.recordedPauses[project.recordedPauses.length - 1];
+        if (!lastPause.end) {
+          lastPause.end = new Date();
+        }
+      }
+
+      const now = new Date();
+      project.status = ProjectStatus.IN_PROGRESS;
+      project.updatedAt = now;
+
+      await this.projectRepository.save(project)
+
+      return project
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      console.error("Error resuming project:", error);
+
+      throw new AppError("Error resuming project.");
     }
   }
 }

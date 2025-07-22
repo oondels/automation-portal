@@ -24,3 +24,5 @@ projectRoute.patch("/:id/estimated-time", AuthMiddleware, CheckPermission("updat
 projectRoute.put("/:id/attend/:service", projectController.attendProject.bind(projectController))
 
 projectRoute.put("/:id/pause/:service", AuthMiddleware, projectController.pauseProject.bind(projectController))
+
+projectRoute.put("/:id/resume/:service", AuthMiddleware, projectController.resumeProject.bind(projectController))
