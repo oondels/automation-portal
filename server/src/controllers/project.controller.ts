@@ -69,4 +69,29 @@ export class ProjectController {
       next(error);
     }
   }
+
+  async attendProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id, service } = req.params
+      const registration = req.user?.matricula as number
+
+      const allowedServices: string[] = ["automation", "carpentry", "metalwork"]
+      if (!allowedServices.includes(service)) {
+        res.status(400).json({ message: "Invalid Service Type." })
+        return
+      }
+
+      const project = await this.projectService.attend(id, registration, service)
+
+      res.status(200).json({ 
+        message: "Project status updated successfully.", 
+        data: {
+          status: project.status,
+          start: project.startDate,
+        }
+       })
+    } catch (error) {
+      next(error)
+    }
+  }
 }
