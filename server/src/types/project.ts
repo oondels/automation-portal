@@ -44,7 +44,8 @@ export interface CreateProjectDTO {
 }
 
 export interface PauseRecord {
-  timestamp: Date;
+  start?: Date;
+  end?: Date;
   reason:    string;
   user:      string;
 }
