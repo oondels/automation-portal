@@ -5,6 +5,7 @@ import { Team } from "../models/Team";
 import { Repository } from "typeorm";
 import { AppError } from "../utils/AppError";
 import { ProjectStatus, ProjectUrgency, PauseRecord, CreateProjectDTO } from "../types/project";
+import { ListProjectsQuery, PaginatedResponse } from "../dtos/list-projects.dto";
 
 export class ProjectService {
   private projectRepository: Repository<Project>
@@ -27,6 +28,50 @@ export class ProjectService {
     }
 
     return project
+  }
+
+  async listProjects(queryParams: ListProjectsQuery): Promise<PaginatedResponse<Project>> {
+    try {
+      const { status, urgency, sector, page, limit, sort } = queryParams;
+      
+      // Parse sort parameter
+      const [sortField, sortDirection] = sort.split(':');
+      const orderBy: Record<string, 'ASC' | 'DESC'> = {};
+      orderBy[sortField] = sortDirection.toUpperCase() as 'ASC' | 'DESC';
+
+      // Build where clause dynamically
+      const where: Record<string, string> = {};
+      if (status) where.status = status;
+      if (urgency) where.urgency = urgency;
+      if (sector) where.sector = sector;
+
+      // Calculate pagination
+      const skip = (page - 1) * limit;
+
+      // Execute query with count
+      const [projects, total] = await this.projectRepository.findAndCount({
+        where,
+        relations: ['automationTeam', 'requestedBy'],
+        order: orderBy,
+        skip,
+        take: limit,
+      });
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        data: projects,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages,
+        },
+      };
+    } catch (error) {
+      console.error("Error listing projects:", error);
+      throw new AppError("Error listing projects", 500);
+    }
   }
 
   // TODO: Create a integration with IA to auto gen tags for the project

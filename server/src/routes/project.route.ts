@@ -9,6 +9,9 @@ import { estimatedTimeSchema } from "../dtos/estimated-time.dto";
 export const projectRoute = Router();
 const projectController = new ProjectController();
 
+// GET /projects - List projects with pagination and filters
+projectRoute.get("/", projectController.listProjects.bind(projectController));
+
 // TODO: Criar DTO para verificação de dados
 projectRoute.post("/", AuthMiddleware, projectController.newProject.bind(projectController));
 

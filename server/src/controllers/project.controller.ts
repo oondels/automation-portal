@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { CreateProjectDTO } from "../types/project";
 import { AppError } from "../utils/AppError";
 import { User } from "models/User";
+import { ListProjectsQuery } from "../dtos/list-projects.dto";
 
 export class ProjectController {
   private projectService: ProjectService;
@@ -16,6 +17,34 @@ export class ProjectController {
   checkService(service: string): void {
     if (!this.allowedServices.includes(service)) {
       throw new AppError("Service type not allowed!", 400)
+    }
+  }
+
+  async listProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      // Validar os query params usando o schema Joi
+      const { error, value } = await import("../dtos/list-projects.dto").then(module => 
+        module.listProjectsQuerySchema.validate(req.query, { allowUnknown: true })
+      );
+
+      if (error) {
+        res.status(400).json({
+          message: "Invalid query parameters",
+          details: error.details.map((detail) => ({
+            path: detail?.path?.join(","),
+            message: detail?.message
+          }))
+        });
+        return;
+      }
+
+      const queryParams: ListProjectsQuery = value;
+      const result = await this.projectService.listProjects(queryParams);
+
+      res.status(200).json(result);
+      return;
+    } catch (error) {
+      next(error);
     }
   }
 
