@@ -41,7 +41,6 @@ export class Project {
   @Column({
     type: 'timestamp',
     nullable: true,
-    default: () => 'CURRENT_TIMESTAMP',
   })
   startDate?: Date;
 
