@@ -23,13 +23,13 @@ export class Team {
   name!: string;
 
   @Column({ type: 'bigint' })
-  registration!: string;
+  registration!: number;
 
   @Column({ type: 'bigint' })
-  rfid!: string;
+  rfid!: number;
 
   @Column({ type: 'bigint' })
-  barcode!: string;
+  barcode!: number;
 
   @Column({ type: 'varchar', length: 50 })
   username!: string;
