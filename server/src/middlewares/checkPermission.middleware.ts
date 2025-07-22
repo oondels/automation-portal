@@ -6,7 +6,7 @@ type RolePermissionMap = {
   [action: string]: {
     allowedRoles: string[],
     allowedUsers?: string[],
-    allowedPositions?: string[],
+    allowedSectors?: string[],
   };
 };
 
@@ -16,12 +16,12 @@ const permissionMap: RolePermissionMap = {
     allowedUsers: ["SERGIO.GONCALVES", "EDUARDO.BISOL", "HENDRIUS.SANTANA"]
   },
   updateEstimatedTime: {
-    allowedRoles: ["ANALISTA", "COORDENADOR"],
-    allowedPositions: ["AUTOMACAO", "TI", "MARCENEIRO", "SERRALHEIRO"]
+    allowedRoles: ["ANALISTA", "COORDENADOR", "TI", "MARCENEIRO", "SERRALHEIRO"],
+    allowedSectors: ["AUTOMACAO", "MARCENARIA", "SERRALHERIA", "TI"]
   },
   attendProject: {
-    allowedRoles: ["ANALISTA", "AUTOMACAO"],
-    allowedPositions: ["AUTOMACAO", "TI", "MARCENEIRO", "SERRALHEIRO"]
+    allowedRoles: ["ANALISTA", "AUTOMACAO", "MECANICO", "TI", "MARCENEIRO", "SERRALHEIRO"],
+    allowedSectors: ["AUTOMACAO", "TI", "MARCENARIA", "SERRALHERIA"]
   },
 };
 
@@ -44,9 +44,9 @@ export const CheckPermission = (action: keyof typeof permissionMap, role: string
 
     const roleAllowed = permission.allowedRoles.includes(user.funcao.toUpperCase());
     const userAllowed = permission.allowedUsers ? permission.allowedUsers.includes(user?.usuario as string) : true;
-    const positionAllowed = permission.allowedPositions ? permission.allowedPositions.includes(user?.funcao as string) : true;
+    const sectorAllowed = permission.allowedSectors ? permission.allowedSectors.includes(user?.funcao as string) : true;
 
-    if ((roleAllowed && positionAllowed) || (roleAllowed && userAllowed) || user.funcao.toUpperCase() === role.toUpperCase()) {
+    if ((roleAllowed && sectorAllowed) || (roleAllowed && userAllowed) || user.funcao.toUpperCase() === role.toUpperCase()) {
       next();
       return
     }
