@@ -22,7 +22,7 @@ import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { useProjects } from "../context/projects-context";
 import { Project, ProjectStatus, ProjectUrgency } from "../types";
-import { formatDate } from "../lib/utils";
+import { formatDate, calculateEstimatedEndDate } from "../lib/utils";
 import { statuses, sectors, urgencies } from "../data/mockData";
 
 export function ProjectsPage() {
@@ -39,8 +39,9 @@ export function ProjectsPage() {
   const pendingApproval = projects.filter(p => p.status === "requested").length;
   const inProgress = projects.filter(p => p.status === "in_progress").length;
   const delayed = projects.filter(p => {
-    if (!p.estimatedEndDate || p.status === "completed" || p.status === "rejected") return false;
-    return new Date(p.estimatedEndDate) < new Date();
+    if (!p.estimatedDurationTime || p.status === "completed" || p.status === "rejected") return false;
+    const estimatedEndDate = calculateEstimatedEndDate(p.startDate, p.estimatedDurationTime);
+    return estimatedEndDate < new Date();
   }).length;
 
   // Team capacity metrics
@@ -53,7 +54,7 @@ export function ProjectsPage() {
   // Filter projects
   const filteredProjects = projects.filter((project) => {
     const matchesSearch = 
-      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project?.cell?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -75,11 +76,11 @@ export function ProjectsPage() {
   // Get urgency icon and color
   const getUrgencyInfo = (urgency: ProjectUrgency) => {
     switch (urgency) {
-      case "alta":
+      case "high":
         return { icon: <ArrowUp className="h-4 w-4" />, color: "text-destructive" };
-      case "media":
+      case "medium":
         return { icon: <Minus className="h-4 w-4" />, color: "text-warning" };
-      case "baixa":
+      case "low":
         return { icon: <ArrowDown className="h-4 w-4" />, color: "text-success" };
     }
   };
@@ -87,7 +88,7 @@ export function ProjectsPage() {
   // Calculate project progress
   const getProjectProgress = (project: Project) => {
     const startDate = project.startDate ? new Date(project.startDate) : new Date();
-    const endDate = new Date(project.estimatedEndDate);
+    const endDate = calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime);
     const today = new Date();
     
     const total = endDate.getTime() - startDate.getTime();
@@ -96,7 +97,7 @@ export function ProjectsPage() {
     
     const isDelayed = today > endDate && project.status !== 'completed';
     
-    return { progress, isDelayed };
+    return { progress, isDelayed, endDate };
   };
 
   return (
@@ -432,7 +433,7 @@ export function ProjectsPage() {
                 <tbody>
                   {filteredProjects.map((project) => {
                     const urgencyInfo = getUrgencyInfo(project.urgency);
-                    const { progress, isDelayed } = getProjectProgress(project);
+                    const { progress, isDelayed, endDate } = getProjectProgress(project);
                     
                     return (
                       <motion.tr
@@ -445,7 +446,7 @@ export function ProjectsPage() {
                       >
                         <td className="p-4 align-middle">
                           <div className="flex flex-col">
-                            <span className="font-medium">{project.name}</span>
+                            <span className="font-medium">{project.projectName}</span>
                             <span className="text-xs text-muted-foreground">
                               {project.cell}
                             </span>
@@ -482,7 +483,7 @@ export function ProjectsPage() {
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span className={isDelayed ? 'text-destructive' : ''}>
-                              {formatDate(project.estimatedEndDate)}
+                              {formatDate(endDate)}
                             </span>
                           </div>
                         </td>
@@ -503,7 +504,7 @@ export function ProjectsPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredProjects.map((project) => {
                 const urgencyInfo = getUrgencyInfo(project.urgency);
-                const { progress, isDelayed } = getProjectProgress(project);
+                const { progress, isDelayed, endDate } = getProjectProgress(project);
                 
                 return (
                   <motion.div
@@ -515,7 +516,7 @@ export function ProjectsPage() {
                       <CardContent className="p-6">
                         <div className="mb-4 flex items-start justify-between">
                           <div className="space-y-1">
-                            <h3 className="font-semibold">{project.name}</h3>
+                            <h3 className="font-semibold">{project.projectName}</h3>
                             <p className="text-sm text-muted-foreground">
                               {project.sector} - {project.cell}
                             </p>
@@ -549,7 +550,7 @@ export function ProjectsPage() {
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span className={isDelayed ? 'text-destructive' : ''}>
-                              Prazo: {formatDate(project.estimatedEndDate)}
+                              Prazo: {formatDate(endDate)}
                             </span>
                           </div>
                         </div>

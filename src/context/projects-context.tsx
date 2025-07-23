@@ -1,27 +1,33 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { Project, ProjectStatus, TimelineEvent, LogEntry } from "../types";
-import { mockProjects } from "../data/mockData";
+// import { mockProjects } from "../data/mockData";
+import axios from "axios";
+import { ip } from "../config/ip";
 
 interface ProjectsContextType {
   projects: Project[];
-  addProject: (project: Omit<Project, "id" >) => Project;
-  updateProjectStatus: (
-    projectId: string,
-    status: ProjectStatus,
-    userId: string,
-    comment?: string
-  ) => void;
+  addProject: (project: Omit<Project, "id">) => Project;
+  updateProjectStatus: (projectId: string, status: ProjectStatus, userId: string, comment?: string) => void;
   getProject: (id: string) => Project | undefined;
 }
 
 const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined);
 
 export function ProjectsProvider({ children }: { children: React.ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
 
-  const addProject = (
-    projectData: Omit<Project, "id">
-  ): Project => {
+  useEffect(() => {
+    axios
+      .get(`${ip}:9137/api/projects/`)
+      .then((response) => {
+        setProjects(response.data.data);
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar projetos: ", error);
+      });
+  }, []);
+
+  const addProject = (projectData: Omit<Project, "id">): Project => {
     const newProject: Project = {
       ...projectData,
       id: `${projects.length + 1}`,
@@ -49,12 +55,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     return newProject;
   };
 
-  const updateProjectStatus = (
-    projectId: string,
-    status: ProjectStatus,
-    userId: string,
-    comment?: string
-  ) => {
+  const updateProjectStatus = (projectId: string, status: ProjectStatus, userId: string, comment?: string) => {
     setProjects((prev) =>
       prev.map((project) => {
         if (project.id === projectId) {
@@ -110,20 +111,20 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
 
           // Update project fields based on status
           const updatedFields: Partial<Project> = { status };
-          
+
           if (status === "approved") {
             updatedFields.approvedBy = userId;
           } else if (status === "in_progress") {
             updatedFields.startDate = new Date().toISOString().split("T")[0];
           } else if (status === "completed") {
-            updatedFields.endDate = new Date().toISOString().split("T")[0];
+            updatedFields.createdAt = new Date().toISOString().split("T")[0];
           }
 
           return {
             ...project,
             ...updatedFields,
-            timeline: [...project.timeline, newTimelineEvent],
-            logs: [...project.logs, newLogEntry],
+            // timeline: [...project.timeline, newTimelineEvent],
+            // logs: [...project.logs, newLogEntry],
           };
         }
         return project;
@@ -136,9 +137,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ProjectsContext.Provider
-      value={{ projects, addProject, updateProjectStatus, getProject }}
-    >
+    <ProjectsContext.Provider value={{ projects, addProject, updateProjectStatus, getProject }}>
       {children}
     </ProjectsContext.Provider>
   );
