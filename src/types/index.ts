@@ -18,29 +18,45 @@ export type ProjectStatus = "requested" | "approved" | "in_progress" | "paused" 
 
 export type ProjectUrgency = "low" | "medium" | "high";
 
-export type Project = {
+export type PauseRecord = {
+  start?: Date | string;
+  end?: Date | string;
+  reason: string;
+  user: string;
+};
+
+export type Team = {
   id: string;
   name: string;
+  description?: string;
+  members?: User[];
+};
+
+export type Project = {
+  id: string;
+  projectName: string; // Matches server model field name
   sector: string;
-  cell?: string;
+  cell?: string; // Frontend specific field for UI display
   status: ProjectStatus;
   urgency: ProjectUrgency;
-  startDate?: string;
-  endDate?: string;
-  estimatedEndDate?: string;
-  description: string;
   projectType: string;
-  projectTags: string[];
-  expectedGains?: {
-    people?: boolean;
-    costs?: boolean;
-    ergonomics?: boolean;
-    [key: string]: boolean | undefined;
-  };
-  requestedBy: string;
+  startDate?: Date | string;
+  estimatedDurationTime?: string; // PostgreSQL interval format (e.g., "30 days", "2 weeks", "90 days")
+  description: string;
+  expectedGains?: string[]; // Matches server model as string array
+  projectTags?: string[];
+  pictures?: string[];
+  requestedBy: User | string; // Can be User object or string ID
   approvedBy?: string | null;
   approvedAt?: Date | string | null;
+  pausedAt?: Date | string | null;
+  recordedPauses?: PauseRecord[];
+  automationTeam?: Team | null;
   concludedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deletedAt?: Date | string | null;
+  // Frontend specific fields for backwards compatibility
   timeline?: TimelineEvent[];
   logs?: LogEntry[];
 };
@@ -50,7 +66,7 @@ export type TimelineEvent = {
   projectId: string;
   type: string;
   date: string;
-  userId: string;
+  userId: string | User;
   comment?: string;
 };
 
@@ -59,7 +75,7 @@ export type LogEntry = {
   projectId: string;
   action: string;
   timestamp: string;
-  userId: string;
+  userId: string | User;
   details?: string;
 };
 
@@ -75,3 +91,13 @@ export type DashboardStats = {
   approved: number;
   completed: number;
 };
+
+export type IntervalObject = {
+  days?: number
+  weeks?: number
+  months?: number
+  years?: number
+  hours?: number
+  minutes?: number
+  seconds?: number
+}
