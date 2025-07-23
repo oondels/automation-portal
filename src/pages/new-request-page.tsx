@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BrainCircuit, MessageCircleQuestion, Clock, Factory, FileText, Layers, MapPin, Tags } from "lucide-react";
+import {
+  BrainCircuit,
+  MessageCircleQuestion,
+  Clock,
+  Factory,
+  FileText,
+  Layers,
+  Tags,
+  Hammer,
+  Drill,
+} from "lucide-react";
 import { useAuth } from "../context/auth-context";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -11,15 +21,10 @@ import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { sectors } from "../data/mockData";
-import { Project, ProjectUrgency } from "../types";
+import { ProjectType, ProjectUrgency } from "../types";
 import { Tooltip } from "../components/ui/tooltip";
 import notificaiton from "../components/Notification";
-
-const projectTypes = [
-  { id: "app_dev", label: "Desenvolvimento de Aplicativo" },
-  { id: "iot", label: "IOT" },
-  { id: "process", label: "Automação de Processos" },
-];
+import { useProjects } from "../context/projects-context";
 
 const urgencyLevels: { value: ProjectUrgency; label: string; color: string }[] = [
   { value: "low", label: "Baixa", color: "bg-success/10 text-success hover:bg-success/20" },
@@ -37,12 +42,13 @@ export function NewRequestPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addProject } = useProjects();
 
   const [formData, setFormData] = useState({
     name: "",
     sector: "",
-    cell: "",
     projectType: "",
+    projectSector: "",
     urgency: "" as ProjectUrgency,
     description: "",
     selectedGains: [] as string[],
@@ -63,7 +69,6 @@ export function NewRequestPage() {
     // if (
     //   !formData.name ||
     //   !formData.sector ||
-    //   !formData.cell ||
     //   !formData.projectType ||
     //   !formData.urgency ||
     //   !formData.description
@@ -74,53 +79,32 @@ export function NewRequestPage() {
 
     setIsSubmitting(true);
     try {
-      const expectedGainsObject = expectedGains.reduce(
-        (acc, gain) => ({
-          ...acc,
-          [gain.id]: formData.selectedGains.includes(gain.id),
-        }),
-        {}
-      );
-
       const requestData = {
-        name: formData.name,
+        projectName: formData.name,
         sector: formData.sector,
-        cell: formData.cell,
-        status: "requested",
+        status: "requested" as const,
         urgency: formData.urgency,
         description: formData.description,
         projectType: formData.projectType,
-        projectTags: [],
-        expectedGains: expectedGainsObject,
-        requestedBy: user?.id || "",
-        estimatedEndDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        expectedGains: formData.selectedGains || [],
+        requestedBy: user?.matricula || "",
       };
 
-      console.log("Project data: ");
-      console.log(requestData);
-      // const newProject = addProject({
-      //   name: formData.name,
-      //   sector: formData.sector,
-      //   cell: formData.cell,
-      //   status: "requested",
-      //   urgency: formData.urgency,
-      //   description: formData.description,
-      //   projectType: "type",
-      //   projectTags: [],
-      //   expectedGains: expectedGainsObject,
-      //   requestedBy: user?.id || "",
-      //   estimatedEndDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-      // });
+      const project = await addProject(requestData);
+      console.log(project);
+
       notificaiton.success(
         "Solicitação de projeto enviada com sucesso!",
         "Sua solicitação foi registrada e está sendo processada.",
         3000
       );
       // navigate(`/projects/${newProject.id}`);
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Erro ao solicitar Projeto: ", error);
+      
       notificaiton.error(
         "Erro ao enviar solicitação de projeto",
-        "Sua solicitação não pôde ser processada. Tente novamente mais tarde.",
+        error.response.data.message || "Sua solicitação não pôde ser processada. Tente novamente mais tarde.",
         5000
       );
     } finally {
@@ -143,7 +127,21 @@ export function NewRequestPage() {
           </div>
           <div className="hidden md:flex items-center justify-center h-16 w-16 rounded-full bg-primary/10">
             {/* TODO: Alterar ícone dinâmicamente de acordo com o tipo de slicitação, exemplo: Automação, Marcenaria, Serralheria, etc */}
-            <BrainCircuit className="h-8 w-8 text-primary" />
+            {/* <BrainCircuit className="h-8 w-8 text-primary" /> */}
+            {/* <Drill className="h-8 w-8 text-primary" /> */}
+            {/* <Hammer className="h-8 w-8 text-primary" /> */}
+            {(() => {
+              switch (formData.projectSector) {
+                case "automation":
+                  return <BrainCircuit className="h-8 w-8 text-primary" />;
+                case "carpentry":
+                  return <Hammer className="h-8 w-8 text-primary" />;
+                case "metalwork":
+                  return <Drill className="h-8 w-8 text-primary" />;
+                default:
+                  return <Factory className="h-8 w-8 text-primary" />;
+              }
+            })()}
           </div>
         </div>
       </motion.div>
@@ -166,6 +164,60 @@ export function NewRequestPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 px-6 py-6">
+              <div className="space-y-3 pt-2">
+                <Label htmlFor="projectType" className="flex items-center gap-2 text-base font-medium">
+                  <Layers className="h-4 w-4 text-primary" />
+                  Setor do Projeto
+                </Label>
+                <Select
+                  value={formData.projectSector}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, projectSector: value }))}
+                >
+                  <SelectTrigger className="w-full rounded-lg border-muted-foreground/20 focus-visible:ring-primary">
+                    <SelectValue placeholder="Selecione um Tipo de Projeto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="automation">Automação</SelectItem>
+                    <SelectItem value="carpentry">Marcenaria</SelectItem>
+                    <SelectItem value="metalwork">Serralheria</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Just show project type select if the project request goes for `Automation` */}
+              {(() => {
+                switch (formData.projectSector) {
+                  case "automation":
+                    return (
+                      <div className="space-y-3 pt-2">
+                        <Label htmlFor="projectType" className="flex items-center gap-2 text-base font-medium">
+                          <Layers className="h-4 w-4 text-primary" />
+                          Tipo de Projeto
+                        </Label>
+                        <Select
+                          value={formData.projectType}
+                          onValueChange={(value) => setFormData((prev) => ({ ...prev, projectType: value }))}
+                        >
+                          <SelectTrigger className="w-full rounded-lg border-muted-foreground/20 focus-visible:ring-primary">
+                            <SelectValue placeholder="Selecione um Tipo de Projeto" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            <SelectItem value={ProjectType.APP_DEVELOPMENT}>Desenvolvimento de Aplicação</SelectItem>
+                            <SelectItem value={ProjectType.PROCESS_AUTOMATION}>Automação de Processos</SelectItem>
+                            <SelectItem value={ProjectType.APP_IMPROVEMENT}>Melhoria de Aplicativo</SelectItem>
+                            <SelectItem value={ProjectType.APP_FIX}>Correção de Aplicativo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    );
+                  case "carpentry":
+                    return;
+                  case "metalwork":
+                    return;
+                }
+              })()}
+
               <div className="space-y-3">
                 <Label htmlFor="name" className="flex items-center gap-2 text-base font-medium">
                   <FileText className="h-4 w-4 text-primary" />
@@ -184,7 +236,7 @@ export function NewRequestPage() {
                 <div className="space-y-3">
                   <Label htmlFor="sector" className="flex items-center gap-2 text-base font-medium">
                     <Factory className="h-4 w-4 text-primary" />
-                    Setor
+                    Setor Solicitante
                   </Label>
                   <Select
                     value={formData.sector}
@@ -202,43 +254,6 @@ export function NewRequestPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="space-y-3">
-                  <Label htmlFor="cell" className="flex items-center gap-2 text-base font-medium">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    Célula
-                  </Label>
-                  <Input
-                    id="cell"
-                    placeholder="Especifique a célula"
-                    value={formData.cell}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, cell: e.target.value }))}
-                    className="rounded-lg border-muted-foreground/20 focus-visible:ring-primary"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <Label className="flex items-center gap-2 text-base font-medium">
-                  <Layers className="h-4 w-4 text-primary" />
-                  Tipo de Projeto
-                </Label>
-                <RadioGroup
-                  value={formData.projectType}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, projectType: value }))}
-                  className="grid gap-3 md:grid-cols-3"
-                >
-                  {projectTypes.map((type) => (
-                    <Label
-                      key={type.id}
-                      htmlFor={type.id}
-                      className="flex cursor-pointer items-center space-x-2 rounded-xl border p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <RadioGroupItem value={type.id} id={type.id} />
-                      <span>{type.label}</span>
-                    </Label>
-                  ))}
-                </RadioGroup>
               </div>
 
               <div className="space-y-3 pt-2">
@@ -319,6 +334,7 @@ export function NewRequestPage() {
             </CardContent>
           </Card>
 
+          {/* Action buttons */}
           <div className="flex items-center justify-end space-x-4 p-4">
             <Button type="button" variant="ghost" onClick={() => navigate(-1)} className="rounded-full px-6">
               Cancelar

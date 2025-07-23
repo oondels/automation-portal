@@ -6,7 +6,7 @@ import { ip } from "../config/ip";
 
 interface ProjectsContextType {
   projects: Project[];
-  addProject: (project: Omit<Project, "id">) => Project;
+  addProject: (project: Omit<Project, "id">) => Promise<Project>;
   updateProjectStatus: (projectId: string, status: ProjectStatus, userId: string, comment?: string) => void;
   getProject: (id: string) => Project | undefined;
 }
@@ -27,32 +27,17 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       });
   }, []);
 
-  const addProject = (projectData: Omit<Project, "id">): Project => {
-    const newProject: Project = {
-      ...projectData,
-      id: `${projects.length + 1}`,
-      timeline: [
-        {
-          id: `t${Date.now()}`,
-          projectId: `${projects.length + 1}`,
-          type: "request",
-          date: new Date().toISOString().split("T")[0],
-          userId: projectData.requestedBy,
-        },
-      ],
-      logs: [
-        {
-          id: `l${Date.now()}`,
-          projectId: `${projects.length + 1}`,
-          action: "Project requested",
-          timestamp: new Date().toISOString(),
-          userId: projectData.requestedBy,
-        },
-      ],
-    };
+  const addProject = async (projectData: Omit<Project, "id">): Promise<Project> => {
+    try {
+      const response = await axios.post(`${ip}:9137/api/projects/`, projectData);
+      const project = response.data as Project;
 
-    setProjects((prev) => [...prev, newProject]);
-    return newProject;
+      setProjects((prev) => [...prev, project]);
+      return project;
+    } catch (error) {
+      console.error('');
+      throw error
+    }
   };
 
   const updateProjectStatus = (projectId: string, status: ProjectStatus, userId: string, comment?: string) => {
@@ -89,26 +74,6 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
               actionText = "Projeto status atualizado";
           }
 
-          // Create new timeline event
-          const newTimelineEvent: TimelineEvent = {
-            id: `t${Date.now()}`,
-            projectId,
-            type: eventType,
-            date: new Date().toISOString().split("T")[0],
-            userId,
-            comment,
-          };
-
-          // Create new log entry
-          const newLogEntry: LogEntry = {
-            id: `l${Date.now()}`,
-            projectId,
-            action: actionText,
-            timestamp: new Date().toISOString(),
-            userId,
-            details: comment,
-          };
-
           // Update project fields based on status
           const updatedFields: Partial<Project> = { status };
 
@@ -123,8 +88,6 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
           return {
             ...project,
             ...updatedFields,
-            // timeline: [...project.timeline, newTimelineEvent],
-            // logs: [...project.logs, newLogEntry],
           };
         }
         return project;
