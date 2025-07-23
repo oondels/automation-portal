@@ -4,7 +4,7 @@ import http from "http"
 import cookieParser from "cookie-parser"
 import { projectRoute } from "./routes/project.route"
 import { WsManager } from './websockets/manager';
-import { config } from "./config/env" // Load and validate environment variables
+import { config } from "./config/env"
 import { AppError } from './utils/AppError';
 import { AppDataSource } from './config/data-source';
 
