@@ -1,5 +1,5 @@
 export type User = {
-  id: string;
+  id?: string;
   nome: string;
   usuario: string;
   email?: string;
@@ -13,6 +13,15 @@ export type User = {
   setor: string;
   unidade: string;
 };
+
+export enum ProjectType {
+  APP_DEVELOPMENT = "app_development",
+  PROCESS_AUTOMATION = "process_automation",
+  APP_IMPROVEMENT = "app_improvement",
+  APP_FIX = "app_fix",
+  CARPENTRY = "carpentry",
+  METALWORK = "metalwork",
+}
 
 export type ProjectStatus = "requested" | "approved" | "in_progress" | "paused" | "completed" | "rejected";
 
