@@ -154,12 +154,12 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.avatar} alt={user?.name} />
-                        <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+                        <AvatarImage src={user?.avatar} alt={user?.nome} />
+                        <AvatarFallback>{user?.nome?.charAt(0) || "U"}</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium">{user?.name}</span>
-                        <span className="text-xs text-muted-foreground">{user?.role}</span>
+                        <span className="text-sm font-medium">{user?.nome}</span>
+                        <span className="text-xs text-muted-foreground">{user?.funcao}</span>
                       </div>
                     </div>
                     <ThemeToggle />
@@ -167,8 +167,8 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
                 ) : (
                   <div className="flex flex-col items-center gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.avatar} alt={user?.name} />
-                      <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+                      <AvatarImage src={user?.avatar} alt={user?.nome} />
+                      <AvatarFallback>{user?.nome?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                     <ThemeToggle />
                   </div>
