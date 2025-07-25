@@ -488,7 +488,7 @@ export function ProjectsPage() {
                           </div>
                         </td>
                         <td className="p-4 text-right align-middle">
-                          <Link to={`/projects/${project.id}`}>
+                          <Link to={`/project/${project.id}`}>
                             <Button variant="outline" size="sm">
                               Ver Detalhes
                             </Button>
@@ -556,7 +556,7 @@ export function ProjectsPage() {
                         </div>
                         
                         <div className="mt-4">
-                          <Link to={`/projects/${project.id}`}>
+                          <Link to={`/project/${project.id}`}>
                             <Button className="w-full" variant="outline">
                               Ver Detalhes
                             </Button>

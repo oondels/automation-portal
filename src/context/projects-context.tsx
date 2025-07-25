@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { Project, ProjectStatus, TimelineEvent, LogEntry } from "../types";
+import { Project, ProjectStatus, TimelineEvent } from "../types";
 // import { mockProjects } from "../data/mockData";
 import axios from "axios";
 import { ip } from "../config/ip";
@@ -29,14 +29,14 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
 
   const addProject = async (projectData: Omit<Project, "id">): Promise<Project> => {
     try {
-      const response = await axios.post(`${ip}:9137/api/projects/`, projectData);
+      const response = await axios.post(`${ip}:9137/api/projects/`, projectData, { withCredentials: true });
       const project = response.data as Project;
 
       setProjects((prev) => [...prev, project]);
       return project;
     } catch (error) {
-      console.error('');
-      throw error
+      console.error("");
+      throw error;
     }
   };
 
@@ -96,7 +96,11 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getProject = (id: string) => {
-    return projects.find((project) => project.id === id);
+    if (projects.length) {
+      console.log(id);
+      console.log(projects);
+      return projects.find((project) => project.id === id);
+    }
   };
 
   return (

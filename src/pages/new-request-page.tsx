@@ -66,16 +66,20 @@ export function NewRequestPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // if (
-    //   !formData.name ||
-    //   !formData.sector ||
-    //   !formData.projectType ||
-    //   !formData.urgency ||
-    //   !formData.description
-    // ) {
-    //   toast.error("Please fill in all required fields");
-    //   return;
-    // }
+    if (
+      !formData.name ||
+      !formData.sector ||
+      !formData.projectType ||
+      !formData.urgency ||
+      !formData.description
+    ) {
+      notificaiton.warning(
+        "Aviso!",
+        "Todos os campos são necessários.",
+        3000
+      );
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -90,15 +94,14 @@ export function NewRequestPage() {
         requestedBy: user?.matricula || "",
       };
 
-      const project = await addProject(requestData);
-      console.log(project);
-
+      const newProject = await addProject(requestData);
       notificaiton.success(
         "Solicitação de projeto enviada com sucesso!",
         "Sua solicitação foi registrada e está sendo processada.",
         3000
       );
-      // navigate(`/projects/${newProject.id}`);
+
+      navigate(`/projects/`);
     } catch (error: any) {
       console.error("Erro ao solicitar Projeto: ", error);
       
