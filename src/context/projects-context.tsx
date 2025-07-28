@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { Project, ProjectStatus, TimelineEvent } from "../types";
+import { Project, ProjectStatus } from "../types";
 // import { mockProjects } from "../data/mockData";
 import axios from "axios";
 import { ip } from "../config/ip";
 
 interface ProjectsContextType {
   projects: Project[];
+  isLoading: boolean;
   addProject: (project: Omit<Project, "id">) => Promise<Project>;
   updateProjectStatus: (projectId: string, status: ProjectStatus, userId: string, comment?: string) => void;
   getProject: (id: string) => Project | undefined;
@@ -15,8 +16,10 @@ const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined
 
 export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     axios
       .get(`${ip}:9137/api/projects/`)
       .then((response) => {
@@ -24,6 +27,9 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       })
       .catch((error) => {
         console.error("Erro ao carregar projetos: ", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, []);
 
@@ -44,36 +50,6 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     setProjects((prev) =>
       prev.map((project) => {
         if (project.id === projectId) {
-          // Determine timeline event type based on status
-          let eventType: TimelineEvent["type"];
-          let actionText: string;
-
-          switch (status) {
-            case "approved":
-              eventType = "approval";
-              actionText = "Projeto Aprovado";
-              break;
-            case "in_progress":
-              eventType = "start";
-              actionText = "Projeto Iniciado";
-              break;
-            case "paused":
-              eventType = "pause";
-              actionText = "Projeto Pausado";
-              break;
-            case "completed":
-              eventType = "completion";
-              actionText = "Projeto Concluído";
-              break;
-            case "rejected":
-              eventType = "rejection";
-              actionText = "Projeto Rejeitado";
-              break;
-            default:
-              eventType = "request";
-              actionText = "Projeto status atualizado";
-          }
-
           // Update project fields based on status
           const updatedFields: Partial<Project> = { status };
 
@@ -96,15 +72,13 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getProject = (id: string) => {
-    if (projects.length) {
-      console.log(id);
-      console.log(projects);
-      return projects.find((project) => project.id === id);
-    }
+    console.log('getProject called with id:', id);
+    console.log('projects array:', projects);
+    return projects.find((project) => project.id === id);
   };
 
   return (
-    <ProjectsContext.Provider value={{ projects, addProject, updateProjectStatus, getProject }}>
+    <ProjectsContext.Provider value={{ projects, isLoading, addProject, updateProjectStatus, getProject }}>
       {children}
     </ProjectsContext.Provider>
   );

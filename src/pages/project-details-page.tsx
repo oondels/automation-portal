@@ -36,7 +36,7 @@ import { formatDate, calculateEstimatedEndDate } from "../lib/utils";
 
 export function ProjectDetailsPage() {
   const { id } = useParams<{ id: string }>();
-  const { getProject, updateProjectStatus } = useProjects();
+  const { getProject, updateProjectStatus, isLoading } = useProjects();
   const authContext = useAuth();
   
   const [project, setProject] = useState<Project | undefined>(undefined);
@@ -48,12 +48,13 @@ export function ProjectDetailsPage() {
   const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "logs">("overview");
 
   useEffect(() => {
-    if (id) {
+    if (id && !isLoading) {
       const foundProject = getProject(id);
+      console.log('Found project:', foundProject);
       setProject(foundProject);
       setEditedProject(foundProject || {});
     }
-  }, [id, getProject]);
+  }, [id, getProject, isLoading]);
 
   // Verificação de segurança para o contexto de autenticação
   if (!authContext) {
@@ -67,6 +68,17 @@ export function ProjectDetailsPage() {
   }
   
   const { user } = authContext;
+
+  // Show loading state while projects are being loaded
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <h2 className="text-xl font-semibold">Carregando projeto...</h2>
+        <p className="text-muted-foreground">Por favor, aguarde enquanto carregamos os dados.</p>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -147,7 +159,10 @@ export function ProjectDetailsPage() {
 
   // Calcular progresso do projeto
   const getProjectProgress = () => {
-    if (!project.startDate || !project.estimatedDurationTime) return 0;
+    if (!project.startDate || 
+        !project.estimatedDurationTime || 
+        typeof project.estimatedDurationTime !== 'string' ||
+        !project.estimatedDurationTime.trim()) return 0;
     
     const startDate = new Date(project.startDate);
     const endDate = calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime);
@@ -160,7 +175,10 @@ export function ProjectDetailsPage() {
   };
 
   const progress = getProjectProgress();
-  const isDelayed = project.startDate && project.estimatedDurationTime && 
+  const isDelayed = project.startDate && 
+    project.estimatedDurationTime && 
+    typeof project.estimatedDurationTime === 'string' &&
+    project.estimatedDurationTime.trim() &&
     new Date() > calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime) &&
     project.status !== "completed";
 
@@ -302,14 +320,21 @@ export function ProjectDetailsPage() {
               <span className="text-sm font-medium">Prazo Estimado</span>
             </div>
             <p className="mt-2 font-semibold">
-              {project.estimatedDurationTime || "Não definido"}
+              {project.estimatedDurationTime && 
+               typeof project.estimatedDurationTime === 'string' &&
+               project.estimatedDurationTime.trim() ? 
+               project.estimatedDurationTime : "Não definido"}
             </p>
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Progresso do Projeto */}
-      {project.status === "in_progress" && project.startDate && project.estimatedDurationTime && (
+      {project.status === "in_progress" && 
+       project.startDate && 
+       project.estimatedDurationTime && 
+       typeof project.estimatedDurationTime === 'string' &&
+       project.estimatedDurationTime.trim() && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -451,7 +476,7 @@ export function ProjectDetailsPage() {
                       {project.expectedGains.map((gain, index) => (
                         <li key={index} className="flex items-center">
                           <Target className="h-3 w-3 mr-2 text-green-500" />
-                          <span className="text-sm">{gain}</span>
+                          <span className="text-sm">{typeof gain === 'string' ? gain : JSON.stringify(gain)}</span>
                         </li>
                       ))}
                     </ul>
@@ -463,7 +488,9 @@ export function ProjectDetailsPage() {
                     <Label className="text-sm font-medium text-muted-foreground">Tags</Label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {project.projectTags.map((tag, index) => (
-                        <Badge key={index} variant="outline">{tag}</Badge>
+                        <Badge key={index} variant="outline">
+                          {typeof tag === 'string' ? tag : JSON.stringify(tag)}
+                        </Badge>
                       ))}
                     </div>
                   </div>
