@@ -50,7 +50,7 @@ export type Project = {
   urgency: ProjectUrgency;
   projectType: string;
   startDate?: Date | string;
-  estimatedDurationTime?: string; // PostgreSQL interval format (e.g., "30 days", "2 weeks", "90 days")
+  estimatedDurationTime?: string | IntervalObject; // PostgreSQL interval format (e.g., "30 days", "2 weeks", "90 days") or object
   description: string;
   expectedGains?: string[]; // Matches server model as string array
   projectTags?: string[];
