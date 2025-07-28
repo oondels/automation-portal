@@ -19,9 +19,9 @@ import {
   Users,
   Target,
   Image,
-  Edit3,
   Save,
-  X
+  X,
+  LucideMessageCircleQuestion
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
@@ -34,11 +34,14 @@ import { useAuth } from "../context/auth-context";
 import { Project, ProjectStatus } from "../types";
 import { formatDate, calculateEstimatedEndDate } from "../lib/utils";
 
+import { projectService } from "../services/ProjectService";
+import notification from "../components/Notification";
+
 export function ProjectDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const { getProject, updateProjectStatus, isLoading } = useProjects();
   const authContext = useAuth();
-  
+
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProject, setEditedProject] = useState<Partial<Project>>({});
@@ -50,7 +53,7 @@ export function ProjectDetailsPage() {
   useEffect(() => {
     if (id && !isLoading) {
       const foundProject = getProject(id);
-      console.log('Found project:', foundProject);
+      console.log("Found project:", foundProject);
       setProject(foundProject);
       setEditedProject(foundProject || {});
     }
@@ -66,10 +69,8 @@ export function ProjectDetailsPage() {
       </div>
     );
   }
-  
   const { user } = authContext;
 
-  // Show loading state while projects are being loaded
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -96,7 +97,6 @@ export function ProjectDetailsPage() {
     );
   }
 
-  // Verificação adicional para garantir que o projeto tem as propriedades necessárias
   if (!project.id || !project.projectName) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -112,6 +112,42 @@ export function ProjectDetailsPage() {
       </div>
     );
   }
+
+  if (user?.setor !== "AUTOMACAO" && user?.funcao !== "GERENTE" && project.status === "requested") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Clock className="h-12 w-12 text-yellow-200" />
+        <h2 className="text-xl font-semibold">Projeto Solicitado...</h2>
+        <h3>Aguarde a aprovação para visualizar informações.</h3>
+        <p className="text-muted-foreground">
+          Apenas gerentes podem visualizar e aprovar/rejeitar projetos solicitados.
+        </p>
+        <Link to="/projects">
+          <Button variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar para Projetos
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const approveProject = async (status: string) => {
+    try {
+      if (project.urgency === editedProject.urgency) {
+        alert("A urgência do projeto foi mantida.");
+      }
+
+      await projectService.approveProject(project.id, status, editedProject.urgency as string);
+      notification.success(
+        "Sucesso!",
+        `Projeto atualizado para: ${status === "approved" ? "Aprovado" : "Reprovado"}.`,
+        3000
+      );
+    } catch (error: any) {
+      notification.error("Erro!", error.response.data.message || "Erro ao atualizar status do projeto.", 3000);
+    }
+  };
 
   const handleStatusChange = (newStatus: ProjectStatus) => {
     if (newStatus === "paused") {
@@ -138,46 +174,61 @@ export function ProjectDetailsPage() {
 
   const getStatusColor = (status: ProjectStatus) => {
     switch (status) {
-      case "requested": return "bg-blue-100 text-blue-800 border-blue-200";
-      case "approved": return "bg-green-100 text-green-800 border-green-200";
-      case "in_progress": return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "paused": return "bg-orange-100 text-orange-800 border-orange-200";
-      case "completed": return "bg-emerald-100 text-emerald-800 border-emerald-200";
-      case "rejected": return "bg-red-100 text-red-800 border-red-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
+      case "requested":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "approved":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "in_progress":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "paused":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "completed":
+        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      case "rejected":
+        return "bg-red-100 text-red-800 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case "high": return "bg-red-100 text-red-800 border-red-200";
-      case "medium": return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "low": return "bg-green-100 text-green-800 border-green-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
+      case "high":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "low":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   // Calcular progresso do projeto
   const getProjectProgress = () => {
-    if (!project.startDate || 
-        !project.estimatedDurationTime || 
-        typeof project.estimatedDurationTime !== 'string' ||
-        !project.estimatedDurationTime.trim()) return 0;
-    
+    if (
+      !project.startDate ||
+      !project.estimatedDurationTime ||
+      typeof project.estimatedDurationTime !== "string" ||
+      !project.estimatedDurationTime.trim()
+    )
+      return 0;
+
     const startDate = new Date(project.startDate);
     const endDate = calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime);
     const today = new Date();
-    
+
     const total = endDate.getTime() - startDate.getTime();
     const elapsed = today.getTime() - startDate.getTime();
-    
+
     return Math.min(Math.max((elapsed / total) * 100, 0), 100);
   };
 
   const progress = getProjectProgress();
-  const isDelayed = project.startDate && 
-    project.estimatedDurationTime && 
-    typeof project.estimatedDurationTime === 'string' &&
+  const isDelayed =
+    project.startDate &&
+    project.estimatedDurationTime &&
+    typeof project.estimatedDurationTime === "string" &&
     project.estimatedDurationTime.trim() &&
     new Date() > calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime) &&
     project.status !== "completed";
@@ -202,7 +253,7 @@ export function ProjectDetailsPage() {
             <p className="text-muted-foreground">#{project.id}</p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {isEditing ? (
             <>
@@ -217,15 +268,16 @@ export function ProjectDetailsPage() {
             </>
           ) : (
             <>
-              <Button variant="outline" onClick={() => setIsEditing(true)} size="sm">
+              {/* Edit Button */}
+              {/* <Button variant="outline" onClick={() => setIsEditing(true)} size="sm">
                 <Edit3 className="mr-2 h-4 w-4" />
                 Editar
-              </Button>
-              
+              </Button> */}
+
               {/* Botões de ação de status */}
               {project.status === "requested" && (
                 <>
-                  <Button onClick={() => handleStatusChange("approved")} size="sm">
+                  <Button onClick={() => approveProject("approved")} size="sm">
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Aprovar
                   </Button>
@@ -235,14 +287,23 @@ export function ProjectDetailsPage() {
                   </Button>
                 </>
               )}
-              
+
               {project.status === "approved" && (
-                <Button onClick={() => handleStatusChange("in_progress")} size="sm">
-                  <Play className="mr-2 h-4 w-4" />
-                  Iniciar
-                </Button>
+                <div className="flex flex-col space-y-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center space-x-2 text-green-800">
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="font-medium">Projeto Aprovado</span>
+                  </div>
+                  <p className="text-sm text-green-700">
+                    Aprovado por: {project.approvedBy?.split(".")[0] + " " + project.approvedBy?.split(".")[1]}
+                  </p>
+                  <div className="flex items-center space-x-2 text-blue-600 mt-2">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm">Defina o prazo estimado de produção</span>
+                  </div>
+                </div>
               )}
-              
+
               {project.status === "in_progress" && (
                 <>
                   <Button variant="outline" onClick={() => handleStatusChange("paused")} size="sm">
@@ -255,7 +316,7 @@ export function ProjectDetailsPage() {
                   </Button>
                 </>
               )}
-              
+
               {project.status === "paused" && (
                 <Button onClick={() => handleStatusChange("in_progress")} size="sm">
                   <Play className="mr-2 h-4 w-4" />
@@ -281,12 +342,19 @@ export function ProjectDetailsPage() {
               <span className="text-sm font-medium">Status</span>
             </div>
             <Badge className={`mt-2 ${getStatusColor(project.status)}`}>
-              {project.status === "requested" ? "Solicitado" :
-               project.status === "approved" ? "Aprovado" :
-               project.status === "in_progress" ? "Em Andamento" :
-               project.status === "paused" ? "Pausado" :
-               project.status === "completed" ? "Concluído" :
-               project.status === "rejected" ? "Rejeitado" : project.status}
+              {project.status === "requested"
+                ? "Solicitado"
+                : project.status === "approved"
+                ? "Aprovado"
+                : project.status === "in_progress"
+                ? "Em Andamento"
+                : project.status === "paused"
+                ? "Pausado"
+                : project.status === "completed"
+                ? "Concluído"
+                : project.status === "rejected"
+                ? "Rejeitado"
+                : project.status}
             </Badge>
           </CardContent>
         </Card>
@@ -297,9 +365,26 @@ export function ProjectDetailsPage() {
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Urgência</span>
             </div>
-            <Badge className={`mt-2 ${getUrgencyColor(project.urgency)}`}>
-              {project.urgency === "high" ? "Alta" : project.urgency === "medium" ? "Média" : "Baixa"}
-            </Badge>
+
+            {/* TODO: && user?.funcao === "gerente" */}
+            {project.status === "requested" ? (
+              <select
+                value={editedProject.urgency || project.urgency}
+                onChange={(e) =>
+                  setEditedProject({ ...editedProject, urgency: e.target.value as "high" | "medium" | "low" })
+                }
+                className={`mt-2 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+                  bg-gray-100 text-gray-800 border-gray-200`}
+              >
+                <option value="low">Baixa</option>
+                <option value="medium">Média</option>
+                <option value="high">Alta</option>
+              </select>
+            ) : (
+              <Badge className={`mt-2 ${getUrgencyColor(project.urgency)}`}>
+                {project.urgency === "high" ? "Alta" : project.urgency === "medium" ? "Média" : "Baixa"}
+              </Badge>
+            )}
           </CardContent>
         </Card>
 
@@ -318,62 +403,74 @@ export function ProjectDetailsPage() {
             <div className="flex items-center space-x-2">
               <Timer className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Prazo Estimado</span>
+              <LucideMessageCircleQuestion className="h-4 w-4 text-muted-foreground pulse-info" />
             </div>
-            <p className="mt-2 font-semibold">
-              {project.estimatedDurationTime && 
-               typeof project.estimatedDurationTime === 'string' &&
-               project.estimatedDurationTime.trim() ? 
-               project.estimatedDurationTime : "Não definido"}
-            </p>
+            {project.status === "approved" ? (
+              <div className="space-y-2 mt-2">
+                <input
+                  type="text"
+                  placeholder="Defina o prazo estimado"
+                  className="w-full px-3 py-2 text-sm text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                
+                <Button size="sm" className="w-full">
+                  <Save className="mr-2 h-4 w-4" />
+                  Definir Prazo
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <p className="mt-2 font-semibold">
+                  {project.estimatedDurationTime &&
+                  typeof project.estimatedDurationTime === "string" &&
+                  project.estimatedDurationTime.trim()
+                    ? project.estimatedDurationTime
+                    : "Não definido"}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Progresso do Projeto */}
-      {project.status === "in_progress" && 
-       project.startDate && 
-       project.estimatedDurationTime && 
-       typeof project.estimatedDurationTime === 'string' &&
-       project.estimatedDurationTime.trim() && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Clock className="h-5 w-5" />
-                <span>Progresso do Projeto</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span>Progresso: {Math.round(progress)}%</span>
-                  <span className={isDelayed ? "text-red-600" : ""}>
-                    {isDelayed ? "Em atraso" : "No prazo"}
-                  </span>
+      {project.status === "in_progress" &&
+        project.startDate &&
+        project.estimatedDurationTime &&
+        typeof project.estimatedDurationTime === "string" &&
+        project.estimatedDurationTime.trim() && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5" />
+                  <span>Progresso do Projeto</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm">
+                    <span>Progresso: {Math.round(progress)}%</span>
+                    <span className={isDelayed ? "text-red-600" : ""}>{isDelayed ? "Em atraso" : "No prazo"}</span>
+                  </div>
+                  <div className="h-3 rounded-full bg-muted">
+                    <div
+                      className={`h-3 rounded-full transition-all ${isDelayed ? "bg-red-500" : "bg-blue-500"}`}
+                      style={{ width: `${Math.min(progress, 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Início: {formatDate(project.startDate)}</span>
+                    <span>
+                      Previsão:{" "}
+                      {formatDate(calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime))}
+                    </span>
+                  </div>
                 </div>
-                <div className="h-3 rounded-full bg-muted">
-                  <div 
-                    className={`h-3 rounded-full transition-all ${
-                      isDelayed ? 'bg-red-500' : 'bg-blue-500'
-                    }`}
-                    style={{ width: `${Math.min(progress, 100)}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Início: {formatDate(project.startDate)}</span>
-                  <span>
-                    Previsão: {formatDate(calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime))}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
       {/* Tabs de Navegação */}
       <div className="border-b">
@@ -436,7 +533,7 @@ export function ProjectDetailsPage() {
                   {isEditing ? (
                     <Textarea
                       value={editedProject.description || ""}
-                      onChange={(e) => setEditedProject({...editedProject, description: e.target.value})}
+                      onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
                       rows={4}
                     />
                   ) : (
@@ -452,7 +549,7 @@ export function ProjectDetailsPage() {
                       <span>{project.sector || "Não informado"}</span>
                     </div>
                   </div>
-                  
+
                   {project.cell && (
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Célula</Label>
@@ -476,7 +573,7 @@ export function ProjectDetailsPage() {
                       {project.expectedGains.map((gain, index) => (
                         <li key={index} className="flex items-center">
                           <Target className="h-3 w-3 mr-2 text-green-500" />
-                          <span className="text-sm">{typeof gain === 'string' ? gain : JSON.stringify(gain)}</span>
+                          <span className="text-sm">{typeof gain === "string" ? gain : JSON.stringify(gain)}</span>
                         </li>
                       ))}
                     </ul>
@@ -489,7 +586,7 @@ export function ProjectDetailsPage() {
                     <div className="flex flex-wrap gap-2 mt-1">
                       {project.projectTags.map((tag, index) => (
                         <Badge key={index} variant="outline">
-                          {typeof tag === 'string' ? tag : JSON.stringify(tag)}
+                          {typeof tag === "string" ? tag : JSON.stringify(tag)}
                         </Badge>
                       ))}
                     </div>
@@ -507,7 +604,7 @@ export function ProjectDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {typeof project.requestedBy === 'object' ? (
+                {typeof project.requestedBy === "object" ? (
                   <>
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Nome</Label>
@@ -531,7 +628,9 @@ export function ProjectDetailsPage() {
                     </div>
                   </>
                 ) : (
-                  <p>ID do usuário: {typeof project.requestedBy === 'string' ? project.requestedBy : 'Não informado'}</p>
+                  <p>
+                    ID do usuário: {typeof project.requestedBy === "string" ? project.requestedBy : "Não informado"}
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -550,30 +649,30 @@ export function ProjectDetailsPage() {
                     <Label className="text-sm font-medium text-muted-foreground">Time</Label>
                     <p className="mt-1 font-medium">{project.automationTeam.name}</p>
                     {project.automationTeam.description && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {project.automationTeam.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">{project.automationTeam.description}</p>
                     )}
                   </div>
-                  
-                  {project.automationTeam.members && Array.isArray(project.automationTeam.members) && project.automationTeam.members.length > 0 && (
-                    <div className="mt-4">
-                      <Label className="text-sm font-medium text-muted-foreground">Membros</Label>
-                      <div className="mt-2 space-y-2">
-                        {project.automationTeam.members.map((member, index) => (
-                          <div key={index} className="flex items-center space-x-2">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                              <User className="h-4 w-4 text-blue-600" />
+
+                  {project.automationTeam.members &&
+                    Array.isArray(project.automationTeam.members) &&
+                    project.automationTeam.members.length > 0 && (
+                      <div className="mt-4">
+                        <Label className="text-sm font-medium text-muted-foreground">Membros</Label>
+                        <div className="mt-2 space-y-2">
+                          {project.automationTeam.members.map((member, index) => (
+                            <div key={index} className="flex items-center space-x-2">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <User className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm">{member.nome}</p>
+                                <p className="text-xs text-muted-foreground">{member.funcao}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-medium text-sm">{member.nome}</p>
-                              <p className="text-xs text-muted-foreground">{member.funcao}</p>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </CardContent>
               </Card>
             )}
@@ -591,11 +690,7 @@ export function ProjectDetailsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     {project.pictures.map((picture, index) => (
                       <div key={index} className="rounded-lg overflow-hidden border">
-                        <img 
-                          src={picture} 
-                          alt={`Imagem ${index + 1}`}
-                          className="w-full h-32 object-cover"
-                        />
+                        <img src={picture} alt={`Imagem ${index + 1}`} className="w-full h-32 object-cover" />
                       </div>
                     ))}
                   </div>
@@ -616,9 +711,7 @@ export function ProjectDetailsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Timeline do Projeto</CardTitle>
-                <CardDescription>
-                  Histórico completo de atividades e mudanças de status
-                </CardDescription>
+                <CardDescription>Histórico completo de atividades e mudanças de status</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -628,12 +721,8 @@ export function ProjectDetailsPage() {
                         <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
                         <div className="flex-1">
                           <p className="font-medium">{event.type}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(event.date)}
-                          </p>
-                          {event.comment && (
-                            <p className="text-sm mt-1">{event.comment}</p>
-                          )}
+                          <p className="text-sm text-muted-foreground">{formatDate(event.date)}</p>
+                          {event.comment && <p className="text-sm mt-1">{event.comment}</p>}
                         </div>
                       </div>
                     ))
@@ -657,9 +746,7 @@ export function ProjectDetailsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Logs do Sistema</CardTitle>
-                <CardDescription>
-                  Registro detalhado de todas as ações realizadas
-                </CardDescription>
+                <CardDescription>Registro detalhado de todas as ações realizadas</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -669,13 +756,9 @@ export function ProjectDetailsPage() {
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-medium">{log.action}</p>
-                            {log.details && (
-                              <p className="text-sm text-muted-foreground mt-1">{log.details}</p>
-                            )}
+                            {log.details && <p className="text-sm text-muted-foreground mt-1">{log.details}</p>}
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(log.timestamp)}
-                          </span>
+                          <span className="text-xs text-muted-foreground">{formatDate(log.timestamp)}</span>
                         </div>
                       </div>
                     ))
@@ -694,9 +777,7 @@ export function ProjectDetailsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Pausar Projeto</DialogTitle>
-            <DialogDescription>
-              Informe o motivo da pausa do projeto para registro.
-            </DialogDescription>
+            <DialogDescription>Informe o motivo da pausa do projeto para registro.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
