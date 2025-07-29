@@ -26,6 +26,14 @@ import { Tooltip } from "../components/ui/tooltip";
 import notification from "../components/Notification";
 import { useProjects } from "../context/projects-context";
 
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
 const urgencyLevels: { value: ProjectUrgency; label: string; color: string }[] = [
   { value: "low", label: "Baixa", color: "bg-success/10 text-success hover:bg-success/20" },
   { value: "medium", label: "Média", color: "bg-warning/10 text-warning hover:bg-warning/20" },
@@ -53,6 +61,8 @@ export function NewRequestPage() {
     description: "",
     selectedGains: [] as string[],
   });
+  
+  const [customGain, setCustomGain] = useState("");
 
   const handleGainToggle = (gainId: string) => {
     setFormData((prev) => ({
@@ -63,12 +73,37 @@ export function NewRequestPage() {
     }));
   };
 
+  const handleAddCustomGain = () => {
+    if (customGain.trim() && !formData.selectedGains.includes(customGain.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        selectedGains: [...prev.selectedGains, customGain.trim()],
+      }));
+      setCustomGain("");
+    }
+  };
+
+  const handleRemoveGain = (gainToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedGains: prev.selectedGains.filter((gain) => gain !== gainToRemove),
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.sector) {
+      notification.warning(
+        "Aviso!",
+        "Por favor, selecione o setor solicitante.",
+        3000
+      );
+      return;
+    }
+
     if (
       !formData.name ||
-      !formData.sector ||
       !formData.projectType ||
       !formData.urgency ||
       !formData.description
@@ -94,7 +129,7 @@ export function NewRequestPage() {
         requestedBy: user?.matricula || "",
       };
 
-      const newProject = await addProject(requestData);
+      await addProject(requestData);
       notification.success(
         "Solicitação de projeto enviada com sucesso!",
         "Sua solicitação foi registrada e está sendo processada.",
@@ -102,12 +137,12 @@ export function NewRequestPage() {
       );
 
       navigate(`/projects/`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Erro ao solicitar Projeto: ", error);
       
       notification.error(
         "Erro ao enviar solicitação de projeto",
-        error.response.data.message || "Sua solicitação não pôde ser processada. Tente novamente mais tarde.",
+        (error as ApiError)?.response?.data?.message || "Sua solicitação não pôde ser processada. Tente novamente mais tarde.",
         5000
       );
     } finally {
@@ -316,6 +351,8 @@ export function NewRequestPage() {
                   <Tags className="h-4 w-4 text-primary" />
                   Ganhos Esperados
                 </Label>
+                
+                {/* Botões para ganhos pré-definidos */}
                 <div className="flex flex-wrap gap-2">
                   {expectedGains.map((gain) => (
                     <Button
@@ -333,6 +370,72 @@ export function NewRequestPage() {
                     </Button>
                   ))}
                 </div>
+
+                {/* Campo para adicionar ganho personalizado */}
+                <div className="space-y-2">
+                  <Label htmlFor="customGain" className="text-sm font-medium text-muted-foreground">
+                    Adicionar ganho personalizado
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="customGain"
+                      placeholder="Digite um ganho esperado personalizado"
+                      value={customGain}
+                      onChange={(e) => setCustomGain(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddCustomGain();
+                        }
+                      }}
+                      className="flex-1 rounded-lg border-muted-foreground/20 focus-visible:ring-primary"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddCustomGain}
+                      disabled={!customGain.trim()}
+                      variant="outline"
+                      className="px-4 rounded-lg"
+                    >
+                      Adicionar
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Lista de ganhos selecionados (incluindo personalizados) */}
+                {formData.selectedGains.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Ganhos selecionados:
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.selectedGains.map((gain) => {
+                        const isPreDefined = expectedGains.some(g => g.id === gain);
+                        const displayLabel = isPreDefined 
+                          ? expectedGains.find(g => g.id === gain)?.label || gain
+                          : gain;
+                        
+                        return (
+                          <div
+                            key={gain}
+                            className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
+                          >
+                            <span>{displayLabel}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveGain(gain)}
+                              className="h-4 w-4 p-0 hover:bg-primary/20 rounded-full ml-1"
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
