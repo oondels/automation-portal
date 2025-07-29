@@ -85,9 +85,24 @@ export function ProjectsPage() {
     }
   };
 
+  const translateUrgency = (urgency: ProjectUrgency) => {
+    switch (urgency) {
+      case "high":
+        return "Alta";
+      case "medium":
+        return "Média";
+      case "low":
+        return "Baixa";
+    }
+  };
+
   // Calculate project progress
   const getProjectProgress = (project: Project) => {
-    const startDate = project.startDate ? new Date(project.startDate) : new Date();
+    if (!project.startDate || !project.estimatedDurationTime) {
+      return { progress: 0, isDelayed: false, endDate: new Date() };
+    }
+
+    const startDate = project.startDate instanceof Date ? project.startDate : new Date(project.startDate);
     const endDate = calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime);
     const today = new Date();
     
@@ -529,7 +544,7 @@ export function ProjectsPage() {
                         <div className="space-y-4">
                           <div className={`flex items-center gap-2 ${urgencyInfo.color}`}>
                             {urgencyInfo.icon}
-                            <span className="capitalize">{project.urgency} Urgência</span>
+                            <span className="capitalize">Urgência: {translateUrgency(project.urgency)}</span>
                           </div>
                           
                           <div className="space-y-1">
@@ -548,9 +563,9 @@ export function ProjectsPage() {
                           </div>
                           
                           <div className="flex items-center gap-2 text-sm">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <Clock className="h-4 w-4 text-muted-foreground" />
                             <span className={isDelayed ? 'text-destructive' : ''}>
-                              Prazo: {formatDate(endDate)}
+                              {formateInterval(project.estimatedDurationTime as object)}
                             </span>
                           </div>
                         </div>
