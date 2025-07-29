@@ -18,6 +18,18 @@ class ProjectService {
       throw error;
     }
   }
+
+  async setEstimatedDurationTime(id: string, duration: string) {
+    try {
+      const response = await api.patch(`/api/projects/${id}/estimated-time`, {
+        estimatedDurationTime: duration,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error setting estimated duration time:", error);
+      throw error;
+    }
+  }
 }
 
 export const projectService = new ProjectService();

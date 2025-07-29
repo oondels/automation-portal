@@ -21,7 +21,7 @@ import {
   Image,
   Save,
   X,
-  LucideMessageCircleQuestion
+  LucideMessageCircleQuestion,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
@@ -31,17 +31,20 @@ import { Label } from "../components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { useProjects } from "../context/projects-context";
 import { useAuth } from "../context/auth-context";
-import { Project, ProjectStatus } from "../types";
-import { formatDate, calculateEstimatedEndDate } from "../lib/utils";
+import { IntervalObject, Project, ProjectStatus } from "../types";
+import { formatDate, calculateEstimatedEndDate, formateInterval } from "../lib/utils";
 
+import { IntervalInput } from "../components/IntervalInput";
 import { projectService } from "../services/ProjectService";
 import notification from "../components/Notification";
+import { Tooltip } from "../components/ui/tooltip";
 
 export function ProjectDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const { getProject, updateProjectStatus, isLoading } = useProjects();
   const authContext = useAuth();
 
+  const [estimatedDurationTime, setEstimatedDurationTime] = useState<string>("");
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProject, setEditedProject] = useState<Partial<Project>>({});
@@ -49,6 +52,11 @@ export function ProjectDetailsPage() {
   const [pauseReason, setPauseReason] = useState("");
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "logs">("overview");
+
+  function isZeroInterval(i?: IntervalObject): boolean {
+    if (!i) return true;
+    return Object.values(i).every((v) => !v || v <= 0);
+  }
 
   useEffect(() => {
     if (id && !isLoading) {
@@ -111,6 +119,18 @@ export function ProjectDetailsPage() {
         </Link>
       </div>
     );
+  }
+
+
+  const handleSetEstimatedTime = async () => {
+    console.log(estimatedDurationTime);
+    try {
+      await projectService.setEstimatedDurationTime(project.id, estimatedDurationTime);
+      notification.success("Sucesso!", "Prazo estimado definido com sucesso.", 3000);
+    } catch (error) {
+      console.error("Error setting estimated time:", error);
+      notification.error("Erro!", "Erro ao definir o prazo estimado do projeto.", 3000);
+    }
   }
 
   if (user?.setor !== "AUTOMACAO" && user?.funcao !== "GERENTE" && project.status === "requested") {
@@ -403,28 +423,36 @@ export function ProjectDetailsPage() {
             <div className="flex items-center space-x-2">
               <Timer className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Prazo Estimado</span>
-              <LucideMessageCircleQuestion className="h-4 w-4 text-muted-foreground pulse-info" />
+
+              <Tooltip content="Defina o prazo do projeto, Exemplo: 1 mês, 2 semanas, 10 dias, 5 horas...">
+                <span className="ml-1 cursor-pointer text-primary/70 hover:text-primary transition-colors">
+                  <LucideMessageCircleQuestion className="h-4 w-4 pulse-info text-yellow-500" />
+                </span>
+              </Tooltip>
             </div>
-            {project.status === "approved" ? (
+
+            {/* TODO: Continuar implementação de atualização do tempo estimado de conclusão do projeto */}
+            {project.status === "approved" && isZeroInterval(project.estimatedDurationTime as IntervalObject) ? (
               <div className="space-y-2 mt-2">
-                <input
+                {/* <input
                   type="text"
                   placeholder="Defina o prazo estimado"
                   className="w-full px-3 py-2 text-sm text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                
-                <Button size="sm" className="w-full">
+                  value={estimatedDurationTime}
+                  onChange={(e) => setEstimatedDurationTime(e.target.value)}
+                /> */}
+                <IntervalInput onChange={(value) => setEstimatedDurationTime(value)} />
+                <Button onClick={handleSetEstimatedTime} size="sm" className="w-full">
                   <Save className="mr-2 h-4 w-4" />
-                  Definir Prazo
+                  Salvar Prazo
                 </Button>
               </div>
             ) : (
               <div>
                 <p className="mt-2 font-semibold">
                   {project.estimatedDurationTime &&
-                  typeof project.estimatedDurationTime === "string" &&
-                  project.estimatedDurationTime.trim()
-                    ? project.estimatedDurationTime
+                  typeof project.estimatedDurationTime === "object"
+                    ? formateInterval(project.estimatedDurationTime)
                     : "Não definido"}
                 </p>
               </div>
