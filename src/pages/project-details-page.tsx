@@ -121,7 +121,6 @@ export function ProjectDetailsPage() {
     );
   }
 
-
   const handleSetEstimatedTime = async () => {
     console.log(estimatedDurationTime);
     try {
@@ -131,7 +130,7 @@ export function ProjectDetailsPage() {
       console.error("Error setting estimated time:", error);
       notification.error("Erro!", "Erro ao definir o prazo estimado do projeto.", 3000);
     }
-  }
+  };
 
   if (user?.setor !== "AUTOMACAO" && user?.funcao !== "GERENTE" && project.status === "requested") {
     return (
@@ -169,12 +168,15 @@ export function ProjectDetailsPage() {
     }
   };
 
-  const handleStatusChange = (newStatus: ProjectStatus) => {
-    if (newStatus === "paused") {
-      setShowStatusDialog(true);
-    } else {
-      updateProjectStatus(project.id, newStatus, user?.id || "system", statusComment);
-      setStatusComment("");
+  const handleStartProject = async (status: ProjectStatus) => {
+    try {
+      const updatedProject = await projectService.startProject(project.id, "automation");
+      updateProjectStatus(project.id, status, user?.id || "system", statusComment);
+      setProject(updatedProject);
+      notification.success("Sucesso!", "Projeto iniciado com sucesso.", 3000);
+    } catch (error) {
+      console.error("Error starting project:", error);
+      notification.error("Erro!", "Erro ao iniciar o projeto.", 3000);
     }
   };
 
@@ -301,14 +303,14 @@ export function ProjectDetailsPage() {
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Aprovar
                   </Button>
-                  <Button variant="destructive" onClick={() => handleStatusChange("rejected")} size="sm">
+                  <Button variant="destructive" size="sm">
                     <XCircle className="mr-2 h-4 w-4" />
                     Rejeitar
                   </Button>
                 </>
               )}
 
-              {project.status === "approved" && (
+              {project.status === "approved" && isZeroInterval(project.estimatedDurationTime as IntervalObject) && (
                 <div className="flex flex-col space-y-2 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex items-center space-x-2 text-green-800">
                     <CheckCircle className="h-4 w-4" />
@@ -324,13 +326,28 @@ export function ProjectDetailsPage() {
                 </div>
               )}
 
+              {/* Projeto solicitado e tempo definido */}
+              {project.status === "approved" && (
+                <>
+                  <Button
+                    className="text-green-500 hover:bg-green-700 py-2 rounded transition-all duration-200 active:scale-95 active:bg-green-800"
+                    variant="outline"
+                    onClick={() => handleStartProject("in_progress")}
+                    size="sm"
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    Iniciar
+                  </Button>
+                </>
+              )}
+
               {project.status === "in_progress" && (
                 <>
-                  <Button variant="outline" onClick={() => handleStatusChange("paused")} size="sm">
+                  <Button variant="outline" size="sm">
                     <Pause className="mr-2 h-4 w-4" />
                     Pausar
                   </Button>
-                  <Button onClick={() => handleStatusChange("completed")} size="sm">
+                  <Button size="sm">
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Concluir
                   </Button>
@@ -338,7 +355,7 @@ export function ProjectDetailsPage() {
               )}
 
               {project.status === "paused" && (
-                <Button onClick={() => handleStatusChange("in_progress")} size="sm">
+                <Button size="sm">
                   <Play className="mr-2 h-4 w-4" />
                   Retomar
                 </Button>
@@ -450,8 +467,7 @@ export function ProjectDetailsPage() {
             ) : (
               <div>
                 <p className="mt-2 font-semibold">
-                  {project.estimatedDurationTime &&
-                  typeof project.estimatedDurationTime === "object"
+                  {project.estimatedDurationTime && typeof project.estimatedDurationTime === "object"
                     ? formateInterval(project.estimatedDurationTime)
                     : "Não definido"}
                 </p>

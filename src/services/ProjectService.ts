@@ -30,6 +30,16 @@ class ProjectService {
       throw error;
     }
   }
+
+  async startProject(id: string, service: string) {
+    try {
+      const response = await api.put(`/api/projects/${id}/attend/${service}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error starting project:", error);
+      throw error;
+    }
+  }
 }
 
 export const projectService = new ProjectService();
