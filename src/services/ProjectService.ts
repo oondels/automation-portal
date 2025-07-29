@@ -52,6 +52,16 @@ class ProjectService {
       throw error;
     }
   }
+
+  async resumeProject(id: string, service: string) {
+    try {
+      const response = await api.put(`/api/projects/${id}/resume/${service}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error resuming project:", error);
+      throw error;
+    }
+  }
 }
 
 export const projectService = new ProjectService();

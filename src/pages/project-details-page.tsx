@@ -199,6 +199,17 @@ export function ProjectDetailsPage() {
     }
   }
 
+  const resumeProject = async () => {
+    try {
+      await projectService.resumeProject(project.id, "automation");
+      updateProjectStatus(project.id, "in_progress", user?.id || "system");
+      notification.success("Sucesso!", "Projeto retomado com sucesso.", 3000);
+    } catch (error) {
+      console.error("Error resuming project:", error);
+      notification.error("Erro!", "Erro ao retomar o projeto.", 3000);
+    }
+  };
+
   const handleSaveEdit = () => {
     // Aqui seria implementada a atualização do projeto
     setProject({ ...project, ...editedProject });
@@ -366,7 +377,7 @@ export function ProjectDetailsPage() {
               )}
 
               {project.status === "paused" && (
-                <Button size="sm">
+                <Button onClick={resumeProject} size="sm">
                   <Play className="mr-2 h-4 w-4" />
                   Retomar
                 </Button>
