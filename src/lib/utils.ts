@@ -108,5 +108,5 @@ export function formateInterval(intervalo: IntervalObject): string {
     }
   }
 
-  return partes.length > 0 ? partes.join(" e ") : "0 minutos";
+  return partes.length > 0 ? partes.join(" e ") : "Não definido";
 }

@@ -22,7 +22,7 @@ import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { useProjects } from "../context/projects-context";
 import { Project, ProjectStatus, ProjectUrgency } from "../types";
-import { formatDate, calculateEstimatedEndDate } from "../lib/utils";
+import { formatDate, calculateEstimatedEndDate, formateInterval } from "../lib/utils";
 import { statuses, sectors, urgencies } from "../data/mockData";
 
 export function ProjectsPage() {
@@ -481,9 +481,9 @@ export function ProjectsPage() {
                         </td>
                         <td className="p-4 align-middle">
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className={isDelayed ? 'text-destructive' : ''}>
-                              {formatDate(endDate)}
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              {formateInterval(project.estimatedDurationTime as object)}
                             </span>
                           </div>
                         </td>
