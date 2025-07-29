@@ -181,12 +181,23 @@ export function ProjectDetailsPage() {
   };
 
   const handlePauseProject = () => {
-    if (pauseReason.trim()) {
-      updateProjectStatus(project.id, "paused", user?.id || "system", pauseReason);
-      setPauseReason("");
-      setShowStatusDialog(false);
-    }
+    setShowStatusDialog(true);
   };
+
+  const pauseProject = async () => {
+    if (pauseReason.trim()) {
+      try {
+        await projectService.pauseProject(project.id, pauseReason, "automation");
+        updateProjectStatus(project.id, "paused", user?.id || "system", pauseReason);
+        setPauseReason("");
+        notification.success("Sucesso!", "Projeto pausado com sucesso.", 3000);
+        setShowStatusDialog(false);
+      } catch (error) {
+        console.error("Error pausing project:", error);
+        notification.error("Erro!", "Erro ao pausar o projeto.", 3000);
+      }
+    }
+  }
 
   const handleSaveEdit = () => {
     // Aqui seria implementada a atualização do projeto
@@ -343,7 +354,7 @@ export function ProjectDetailsPage() {
 
               {project.status === "in_progress" && (
                 <>
-                  <Button variant="outline" size="sm">
+                  <Button onClick={handlePauseProject} className="hover:bg-yellow-600 py-2 rounded transition-all duration-200 active:scale-95 active:bg-yellow-600" variant="outline" size="sm">
                     <Pause className="mr-2 h-4 w-4" />
                     Pausar
                   </Button>
@@ -829,6 +840,7 @@ export function ProjectDetailsPage() {
               <Textarea
                 id="pause-reason"
                 value={pauseReason}
+                className="mt-2"
                 onChange={(e) => setPauseReason(e.target.value)}
                 placeholder="Descreva o motivo da pausa..."
                 rows={3}
@@ -838,7 +850,7 @@ export function ProjectDetailsPage() {
               <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handlePauseProject} disabled={!pauseReason.trim()}>
+              <Button onClick={pauseProject} disabled={!pauseReason.trim()}>
                 Pausar Projeto
               </Button>
             </div>

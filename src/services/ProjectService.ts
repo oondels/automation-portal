@@ -40,6 +40,18 @@ class ProjectService {
       throw error;
     }
   }
+
+  async pauseProject(id: string, reason: string, service: string) {
+    try {
+      const response = await api.put(`/api/projects/${id}/pause/${service}`, {
+        reason,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error pausing project:", error);
+      throw error;
+    }
+  }
 }
 
 export const projectService = new ProjectService();
