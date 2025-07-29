@@ -7,7 +7,8 @@ export const authApi = axios.create({
 });
 
 export const api = axios.create({
-  baseURL: `${ip}:9137`
+  baseURL: `${ip}:9137`,
+  withCredentials: true
 });
 
 attachInterceptors(api, authApi);
