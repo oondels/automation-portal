@@ -23,7 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { sectors } from "../data/mockData";
 import { ProjectType, ProjectUrgency } from "../types";
 import { Tooltip } from "../components/ui/tooltip";
-import notificaiton from "../components/Notification";
+import notification from "../components/Notification";
 import { useProjects } from "../context/projects-context";
 
 const urgencyLevels: { value: ProjectUrgency; label: string; color: string }[] = [
@@ -73,7 +73,7 @@ export function NewRequestPage() {
       !formData.urgency ||
       !formData.description
     ) {
-      notificaiton.warning(
+      notification.warning(
         "Aviso!",
         "Todos os campos são necessários.",
         3000
@@ -95,7 +95,7 @@ export function NewRequestPage() {
       };
 
       const newProject = await addProject(requestData);
-      notificaiton.success(
+      notification.success(
         "Solicitação de projeto enviada com sucesso!",
         "Sua solicitação foi registrada e está sendo processada.",
         3000
@@ -105,7 +105,7 @@ export function NewRequestPage() {
     } catch (error: any) {
       console.error("Erro ao solicitar Projeto: ", error);
       
-      notificaiton.error(
+      notification.error(
         "Erro ao enviar solicitação de projeto",
         error.response.data.message || "Sua solicitação não pôde ser processada. Tente novamente mais tarde.",
         5000
