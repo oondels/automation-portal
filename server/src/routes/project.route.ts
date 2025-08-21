@@ -5,6 +5,7 @@ import { CheckPermission } from "../middlewares/checkPermission.middleware";
 import { validateRequest } from "../middlewares/validateRequest.middleware";
 import { projectValidationSchema } from "../dtos/approve-project.dto";
 import { estimatedTimeSchema } from "../dtos/estimated-time.dto";
+import { createProjectSchema } from "../dtos/create-project.dto";
 
 export const projectRoute = Router();
 const projectController = new ProjectController();
@@ -13,7 +14,7 @@ const projectController = new ProjectController();
 projectRoute.get("/", projectController.listProjects.bind(projectController));
 
 // TODO: Criar DTO para verificação de dados
-projectRoute.post("/", AuthMiddleware, projectController.newProject.bind(projectController));
+projectRoute.post("/", AuthMiddleware, validateRequest(createProjectSchema), projectController.newProject.bind(projectController));
 
 projectRoute.patch("/:id/approval", AuthMiddleware, CheckPermission("approveProject", "analista"),
   validateRequest(projectValidationSchema), projectController.approveProject.bind(projectController));
@@ -24,7 +25,7 @@ projectRoute.patch("/:id/estimated-time", AuthMiddleware, CheckPermission("updat
 
 // TODO: Criar DTO para verificação de dados se necessariostat
 // AuthMiddleware, CheckPermission("attendProject"),
-projectRoute.put("/:id/attend/:service", projectController.attendProject.bind(projectController))
+projectRoute.put("/:id/attend/:service", AuthMiddleware, projectController.attendProject.bind(projectController))
 
 projectRoute.put("/:id/pause/:service", AuthMiddleware, projectController.pauseProject.bind(projectController))
 

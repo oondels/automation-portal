@@ -6,7 +6,7 @@ import { TokenPayload } from "../types/auth"
 const PRIVATE_KEY = config.secret_key
 
 export const AuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.cookies.token;
+  const token = req.cookies.token;  
   if (!token) {
     res.status(401).json({ message: "Acesso negado! Token de acesso não fornecido!" });
     return;

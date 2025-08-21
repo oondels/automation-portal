@@ -14,7 +14,7 @@ export class WsManager {
     wss.on("connection", (ws: WsClient) => {
       const id = uuid()
       ws.id = id
-      // Add the client to connected clients      
+      ws.isAlive = true
       this.clients.set(id, ws)
 
       ws.on("pong", () => ws.isAlive = true)
@@ -24,16 +24,20 @@ export class WsManager {
       });
 
       ws.on('close', () => this.clients.delete(ws.id));
-
-      setInterval(() => {
-        this.clients.forEach(client => {
-          if (!client.isAlive) return client.terminate()
-
-          client.isAlive = true
-          client.ping();
-        })
-      }, 15000);
     })
+
+    // Single heartbeat interval for all clients
+    setInterval(() => {
+      this.clients.forEach(client => {
+        if (!client.isAlive) {
+          client.terminate()
+          this.clients.delete(client.id)
+          return
+        }
+        client.isAlive = false
+        try { client.ping() } catch (_) { /* no-op */ }
+      })
+    }, 15000)
   }
 
   broadcast(msg: unknown) {

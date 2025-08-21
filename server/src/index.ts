@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import express, { Request, Response, NextFunction } from 'express';
 import cors from "cors"
 import http from "http"
@@ -52,5 +53,4 @@ AppDataSource.initialize()
     console.error("Error initializing DataSource", error);
     process.exit(1);
   });
-
 

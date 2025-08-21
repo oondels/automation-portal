@@ -18,6 +18,14 @@ export class ProjectService {
     this.teamRepository = AppDataSource.getRepository(Team)
   }
 
+  private hasValidEstimatedDuration(estimated?: string): boolean {
+    if (!estimated) return false;
+    const s = String(estimated).trim().toLowerCase();
+    // Common zero representations for Postgres interval/string inputs
+    if (s === '0 days' || s === '00:00:00' || s === '0:00:00' || s === '0' || s === 'p0d') return false;
+    return true;
+  }
+
   async getProject(id: string): Promise<Project> {
     const project = await this.projectRepository.findOne({
       where: { id: id },
@@ -98,7 +106,7 @@ export class ProjectService {
     const project = await this.getProject(projectId)
 
     if (project.status !== ProjectStatus.REQUESTED) {
-      throw new AppError("Only projects with status 'requested' can be approved", 400);
+      throw new AppError("Apenas projetos com status 'solicitado' podem ser aprovados", 400);
     }
 
     project.status = newStatus;
@@ -139,7 +147,7 @@ export class ProjectService {
       const project = await this.getProject(projectId)
 
       if (project.status !== ProjectStatus.APPROVED) throw new AppError("Only projects with status 'approved' can be attended!")
-      if (!project.estimatedDurationTime || project.estimatedDurationTime === "00:00:00") throw new AppError("Only projects with defined estimated duration time can be attended!");
+      if (!this.hasValidEstimatedDuration(project.estimatedDurationTime)) throw new AppError("Only projects with defined estimated duration time can be attended!");
 
       let teammate;
       if (service === "automation") {

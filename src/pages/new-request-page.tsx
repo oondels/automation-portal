@@ -136,7 +136,10 @@ export function NewRequestPage() {
         3000
       );
 
-      navigate(`/projects/`);
+      // navigate(`/projects/`);
+      setTimeout(() => {
+        window.location.reload()
+      }, 1500);
     } catch (error: unknown) {
       console.error("Erro ao solicitar Projeto: ", error);
       

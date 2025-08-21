@@ -42,9 +42,9 @@ export const CheckPermission = (action: keyof typeof permissionMap, role: string
       return
     }
 
-    const roleAllowed = permission.allowedRoles.includes(user.funcao.toUpperCase());
+    const roleAllowed = permission.allowedRoles.includes(user.funcao?.toUpperCase?.() ?? "");
     const userAllowed = permission.allowedUsers ? permission.allowedUsers.includes(user?.usuario as string) : true;
-    const sectorAllowed = permission.allowedSectors ? permission.allowedSectors.includes(user?.funcao as string) : true;
+    const sectorAllowed = permission.allowedSectors ? permission.allowedSectors.includes(user?.setor?.toUpperCase?.() ?? "") : true;
 
     if ((roleAllowed && sectorAllowed) || (roleAllowed && userAllowed) || user.funcao.toUpperCase() === role.toUpperCase()) {
       next();

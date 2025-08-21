@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  Activity,
   ArrowRight,
   Bot,
   Brain,
@@ -252,7 +251,7 @@ export function LandingPage() {
               <span className="text-xl font-bold">Dass Santo Estêvão</span>
             </div>
             <div className="flex flex-col items-center gap-2 sm:flex-row">
-              <p className="text-sm text-muted-foreground">Contato: TI e Automação - Ramal 123</p>
+              <p className="text-sm text-muted-foreground">Contato: TI e Automação - Ramal 4702</p>
               <span className="hidden sm:inline text-muted-foreground">•</span>
               <Link to="/login" className="text-sm text-primary hover:text-primary/80">
                 Acesso Interno

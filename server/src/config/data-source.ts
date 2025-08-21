@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { config } from "./env"
 import { DataSource } from "typeorm"
 import { User } from "../models/User"

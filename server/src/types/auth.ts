@@ -3,6 +3,7 @@ export interface TokenPayload {
   matricula: number;
   funcao: string;
   usuario?: string;
+  setor?: string;
   iat?: number;
   exp?: number;
 }
