@@ -4,6 +4,7 @@ import { DataSource } from "typeorm"
 import { User } from "../models/User"
 import { Team } from "../models/Team"
 import { Project } from "../models/Project"
+import { ProjectTimeline } from "../models/ProjectTimeline"
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -14,7 +15,7 @@ export const AppDataSource = new DataSource({
   database: config.database.name,
   synchronize: config.env === 'development', // Keep just in development mode
   logging: false,
-  entities: [Project, Team, User],
+  entities: [Project, Team, User, ProjectTimeline],
   subscribers: [],
   migrations: [],
 })

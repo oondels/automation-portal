@@ -4,7 +4,7 @@ import cors from "cors"
 import http from "http"
 import cookieParser from "cookie-parser"
 import { projectRoute } from "./routes/project.route"
-import { WsManager } from './websockets/manager';
+import { WsManager, setWsManagerInstance } from './websockets/manager';
 import { config } from "./config/env"
 import { AppError } from './utils/AppError';
 import { AppDataSource } from './config/data-source';
@@ -37,6 +37,7 @@ AppDataSource.initialize()
 
       const server = http.createServer(app)
       const wsManager = new WsManager(server)
+      setWsManagerInstance(wsManager)
 
       // Health check
       app.get("/", (_, res: Response) => {
@@ -53,4 +54,3 @@ AppDataSource.initialize()
     console.error("Error initializing DataSource", error);
     process.exit(1);
   });
-

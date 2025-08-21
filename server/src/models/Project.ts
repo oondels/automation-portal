@@ -11,6 +11,8 @@ import {
 import { User } from './User';
 import { Team } from './Team';
 import { ProjectUrgency, ProjectType, ProjectStatus, PauseRecord } from '../types/project';
+import { OneToMany } from 'typeorm';
+import { ProjectTimeline } from './ProjectTimeline';
 
 @Entity({ schema: 'automacao', name: 'projects' })
 export class Project {
@@ -116,4 +118,8 @@ export class Project {
 
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
   deletedAt?: Date;
+
+  // Relation: project -> timeline entries
+  @OneToMany(() => ProjectTimeline, timeline => timeline.project)
+  timeline!: ProjectTimeline[];
 }

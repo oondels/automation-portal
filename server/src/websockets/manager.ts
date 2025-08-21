@@ -47,3 +47,8 @@ export class WsManager {
     })
   }
 }
+
+// Singleton helpers to allow broadcasting from anywhere
+let wsInstance: WsManager | null = null
+export const setWsManagerInstance = (instance: WsManager) => { wsInstance = instance }
+export const wsBroadcast = (msg: unknown) => { wsInstance?.broadcast(msg) }

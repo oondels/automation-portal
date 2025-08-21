@@ -51,7 +51,34 @@ npm run dev
 
 ## WebSockets
 - Servidor WS embutido no mesmo HTTP server.
-- Mantém clientes vivos com ping/pong e permite `broadcast`.
+- Mantém clientes vivos com ping/pong; broadcast global habilitado.
+- Eventos emitidos automaticamente ao registrar timeline de projetos (`type: "project.timeline"`).
+
+### Payload de evento
+```
+{
+  "type": "project.timeline",
+  "data": {
+    "id": "<uuid do timeline>",
+    "projectId": "<uuid do projeto>",
+    "user": { "matricula": 123, "usuario": "JOAO.SILVA", "nome": "João Silva" },
+    "eventType": "criado|aprovado|tempo_estimado_atualizado|atendido|pausado|retomado",
+    "eventDescription": "Texto em PT-BR explicando o evento",
+    "oldStatus": "requested|approved|in_progress|paused|completed|rejected|null",
+    "newStatus": "requested|approved|in_progress|paused|completed|rejected",
+    "payload": { "...": "dados adicionais do evento" },
+    "createdAt": "2024-07-21T12:34:56.000Z"
+  }
+}
+```
+
+### Tipos de eventos (PT-BR)
+- `criado` — projeto foi criado.
+- `aprovado` — status atualizado para aprovado/reprovado (inclui urgência).
+- `tempo_estimado_atualizado` — mudança do tempo estimado.
+- `atendido` — atendimento iniciado por um colaborador.
+- `pausado` — atendimento pausado (inclui motivo).
+- `retomado` — atendimento retomado.
 
 ## Estrutura
 - `src/index.ts` — bootstrap do servidor e WebSocket.
@@ -70,4 +97,3 @@ npm run dev
 - DTO de criação de projeto adicionado e já aplicado na rota `POST /api/projects`.
 - Ajustar regras de permissão conforme papéis/usuários reais.
 - Considerar migrações em produção (`synchronize: false`).
-

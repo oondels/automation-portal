@@ -98,7 +98,7 @@ export class ProjectController {
       const projectId = req.params.id;
       const { estimatedDurationTime } = req.body
 
-      await this.projectService.updateEstimatedTime(projectId, estimatedDurationTime);
+      await this.projectService.updateEstimatedTime(projectId, estimatedDurationTime, req.user?.matricula);
 
       res.status(200).json({
         message: `Project estimated time updated successfully`,

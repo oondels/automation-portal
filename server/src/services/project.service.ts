@@ -6,16 +6,20 @@ import { Repository } from "typeorm";
 import { AppError } from "../utils/AppError";
 import { ProjectStatus, ProjectUrgency, PauseRecord, CreateProjectDTO } from "../types/project";
 import { ListProjectsQuery, PaginatedResponse } from "../dtos/list-projects.dto";
+import { ProjectTimeline } from "../models/ProjectTimeline";
+import { wsBroadcast } from "../websockets/manager";
 
 export class ProjectService {
   private projectRepository: Repository<Project>
   private userRepository: Repository<User>
   private teamRepository: Repository<Team>
+  private timelineRepository: Repository<ProjectTimeline>
 
   constructor() {
     this.projectRepository = AppDataSource.getRepository(Project)
     this.userRepository = AppDataSource.getRepository(User)
     this.teamRepository = AppDataSource.getRepository(Team)
+    this.timelineRepository = AppDataSource.getRepository(ProjectTimeline)
   }
 
   private hasValidEstimatedDuration(estimated?: string): boolean {
@@ -36,6 +40,46 @@ export class ProjectService {
     }
 
     return project
+  }
+
+  private async appendTimeline(options: {
+    project: Project,
+    userRegistration: number,
+    eventType: string,
+    description: string,
+    oldStatus: string | null,
+    newStatus: string,
+    payload?: Record<string, unknown>
+  }): Promise<void> {
+    const { project, userRegistration, eventType, description, oldStatus, newStatus, payload } = options
+    const user = await this.userRepository.findOne({ where: { matricula: userRegistration } })
+    if (!user) return
+
+    const entry = this.timelineRepository.create({
+      project,
+      user,
+      eventType,
+      eventDescription: description,
+      oldStatus: oldStatus ?? undefined,
+      newStatus,
+      payload: payload ?? {},
+    })
+    const saved = await this.timelineRepository.save(entry)
+    // Broadcast WS event
+    wsBroadcast({
+      type: 'project.timeline',
+      data: {
+        id: saved.id,
+        projectId: project.id,
+        user: { matricula: user.matricula, usuario: user.usuario, nome: user.nome },
+        eventType: saved.eventType,
+        eventDescription: saved.eventDescription,
+        oldStatus: saved.oldStatus,
+        newStatus: saved.newStatus,
+        payload: saved.payload,
+        createdAt: saved.createdAt,
+      }
+    })
   }
 
   async listProjects(queryParams: ListProjectsQuery): Promise<PaginatedResponse<Project>> {
@@ -59,7 +103,7 @@ export class ProjectService {
       // Execute query with count
       const [projects, total] = await this.projectRepository.findAndCount({
         where,
-        relations: ['automationTeam', 'requestedBy'],
+        relations: ['automationTeam', 'requestedBy', 'timeline'],
         order: orderBy,
         skip,
         take: limit,
@@ -92,6 +136,16 @@ export class ProjectService {
 
       const project = this.projectRepository.create({ ...projectData, requestedBy: user });
       await this.projectRepository.save(project);
+      // timeline: created
+      await this.appendTimeline({
+        project,
+        userRegistration: user.matricula,
+        eventType: 'solicitado',
+        description: `Projeto solicitado por ${user.usuario ?? user.nome ?? user.matricula}`,
+        oldStatus: null,
+        newStatus: project.status,
+        payload: { projectName: project.projectName, sector: project.sector }
+      })
       return project;
     } catch (error) {
       if (error instanceof AppError) throw error;
@@ -109,6 +163,7 @@ export class ProjectService {
       throw new AppError("Apenas projetos com status 'solicitado' podem ser aprovados", 400);
     }
 
+    const oldStatus = project.status
     project.status = newStatus;
     project.urgency = urgency
     project.approvedBy = username
@@ -116,6 +171,19 @@ export class ProjectService {
 
     try {
       await this.projectRepository.save(project)
+      // find approver by username to get registration
+      const approver = await this.userRepository.findOne({ where: { usuario: username } })
+      if (approver) {
+        await this.appendTimeline({
+          project,
+          userRegistration: approver.matricula,
+          eventType: 'aprovado',
+          description: `Projeto ${newStatus} por ${username} (urgência: ${urgency})`,
+          oldStatus,
+          newStatus,
+          payload: { urgency }
+        })
+      }
 
       return project
     } catch (error) {
@@ -126,7 +194,7 @@ export class ProjectService {
     }
   }
 
-  async updateEstimatedTime(projectId: string, estimatedTime: string): Promise<void> {
+  async updateEstimatedTime(projectId: string, estimatedTime: string, userRegistration?: number): Promise<void> {
     try {
       const project = await this.getProject(projectId)
 
@@ -134,6 +202,17 @@ export class ProjectService {
       project.updatedAt = new Date()
 
       await this.projectRepository.save(project)
+      if (userRegistration) {
+        await this.appendTimeline({
+          project,
+          userRegistration,
+          eventType: 'tempo_estimado_atualizado',
+          description: `Tempo estimado atualizado para ${estimatedTime}`,
+          oldStatus: project.status,
+          newStatus: project.status,
+          payload: { estimatedDurationTime: estimatedTime }
+        })
+      }
     } catch (error) {
       if (error instanceof AppError) throw error
       console.error("Error updating project estimated time:", error);
@@ -160,10 +239,21 @@ export class ProjectService {
       }
 
       const now = new Date();
+      const oldStatus = project.status
       project.status = ProjectStatus.IN_PROGRESS;
       project.startDate = now;
       project.updatedAt = now;
       await this.projectRepository.save(project)
+
+      await this.appendTimeline({
+        project,
+        userRegistration,
+        eventType: 'atendido',
+        description: `Projeto atendido por ${userRegistration} (${service})`,
+        oldStatus,
+        newStatus: project.status,
+        payload: { service }
+      })
 
       return project
     } catch (error) {
@@ -191,11 +281,21 @@ export class ProjectService {
         reason: reason,
         user: user.usuario
       }
+      const oldStatus = project.status
       project.updatedAt = now
       project.status = ProjectStatus.PAUSED
       project.recordedPauses.push(pause)
 
       await this.projectRepository.save(project)
+      await this.appendTimeline({
+        project,
+        userRegistration: Number(user.matricula),
+        eventType: 'pausado',
+        description: `Projeto pausado por ${user.usuario} - motivo: ${reason}`,
+        oldStatus,
+        newStatus: project.status,
+        payload: { service, reason }
+      })
     } catch (error) {
       if (error instanceof AppError) throw error;
       console.error("Error pausing project:", error);
@@ -224,10 +324,21 @@ export class ProjectService {
       }
 
       const now = new Date();
+      const oldStatus = project.status
       project.status = ProjectStatus.IN_PROGRESS;
       project.updatedAt = now;
 
       await this.projectRepository.save(project)
+
+      await this.appendTimeline({
+        project,
+        userRegistration: Number(user.matricula),
+        eventType: 'retomado',
+        description: `Projeto retomado por ${user.usuario}`,
+        oldStatus,
+        newStatus: project.status,
+        payload: { service }
+      })
 
       return project
     } catch (error) {
