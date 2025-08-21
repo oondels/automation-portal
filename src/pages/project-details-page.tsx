@@ -277,6 +277,54 @@ export function ProjectDetailsPage() {
     new Date() > calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime) &&
     project.status !== "completed";
 
+  // Helpers para exibir payloads de forma amigável
+  const friendlyKey = (key: string): string => {
+    const map: Record<string, string> = {
+      estimatedDurationTime: "Tempo estimado",
+      reason: "Motivo",
+      service: "Serviço",
+      projectName: "Projeto",
+      sector: "Setor",
+      urgency: "Urgência",
+      oldStatus: "Status anterior",
+      newStatus: "Novo status",
+    };
+    if (map[key]) return map[key];
+    // Fallback: quebra camelCase/snake_case e capitaliza
+    const spaced = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2");
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  };
+
+  const friendlyValue = (key: string, value: unknown): string => {
+    if (value == null) return "-";
+    if (typeof value !== "string") return JSON.stringify(value);
+    const v = value.toString();
+    if (key === "service") {
+      if (v === "automation") return "Automação";
+      if (v === "carpentry") return "Marcenaria";
+      if (v === "metalwork") return "Serralheria";
+      return v;
+    }
+    if (key === "urgency") {
+      if (v === "high") return "Alta";
+      if (v === "medium") return "Média";
+      if (v === "low") return "Baixa";
+      return v;
+    }
+    if (key === "estimatedDurationTime") {
+      // Tradução simples de termos em inglês
+      return v
+        .replace(/years?/gi, (m) => (m.toLowerCase() === "year" ? "ano" : "anos"))
+        .replace(/months?/gi, (m) => (m.toLowerCase() === "month" ? "mês" : "meses"))
+        .replace(/weeks?/gi, (m) => (m.toLowerCase() === "week" ? "semana" : "semanas"))
+        .replace(/days?/gi, (m) => (m.toLowerCase() === "day" ? "dia" : "dias"))
+        .replace(/hours?/gi, (m) => (m.toLowerCase() === "hour" ? "hora" : "horas"))
+        .replace(/minutes?/gi, (m) => (m.toLowerCase() === "minute" ? "minuto" : "minutos"))
+        .replace(/seconds?/gi, (m) => (m.toLowerCase() === "second" ? "segundo" : "segundos"));
+    }
+    return v;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -356,12 +404,15 @@ export function ProjectDetailsPage() {
                     variant="outline"
                     onClick={() => handleStartProject("in_progress")}
                     size="sm"
+                    disabled={Object.keys(project?.estimatedDurationTime ?? {}).length === 0}
                   >
                     <Play className="mr-2 h-4 w-4" />
                     Iniciar
                   </Button>
                 </>
               )}
+
+              {/* {JSON.stringify(project)} */}
 
               {project.status === "in_progress" && (
                 <>
@@ -782,16 +833,72 @@ export function ProjectDetailsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {project.timeline && Array.isArray(project.timeline) && project.timeline.length > 0 ? (
-                    project.timeline.map((event) => (
-                      <div key={event.id} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
-                        <div className="flex-1">
-                          <p className="font-medium">{event.type}</p>
-                          <p className="text-sm text-muted-foreground">{formatDate(event.date)}</p>
-                          {event.comment && <p className="text-sm mt-1">{event.comment}</p>}
-                        </div>
-                      </div>
-                    ))
+                    [...project.timeline]
+                      .sort((a: any, b: any) => new Date(b.createdAt ?? b.date ?? 0).getTime() - new Date(a.createdAt ?? a.date ?? 0).getTime())
+                      .map((event: any) => {
+                        const oldLabel = event.oldStatus
+                          ? (event.oldStatus === "requested"
+                            ? "Solicitado/Criado"
+                            : event.oldStatus === "approved"
+                            ? "Aprovado"
+                            : event.oldStatus === "in_progress"
+                            ? "Em Andamento"
+                            : event.oldStatus === "paused"
+                            ? "Pausado"
+                            : event.oldStatus === "completed"
+                            ? "Concluído"
+                            : event.oldStatus === "rejected"
+                            ? "Rejeitado"
+                            : event.oldStatus)
+                          : null;
+                        const newLabel = event.newStatus
+                          ? (event.newStatus === "requested"
+                            ? "Solicitado"
+                            : event.newStatus === "approved"
+                            ? "Aprovado"
+                            : event.newStatus === "in_progress"
+                            ? "Em Andamento"
+                            : event.newStatus === "paused"
+                            ? "Pausado"
+                            : event.newStatus === "completed"
+                            ? "Concluído"
+                            : event.newStatus === "rejected"
+                            ? "Rejeitado"
+                            : event.newStatus)
+                          : null;
+                        return (
+                          <div key={event.id} className="flex items-start space-x-3">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <p className="font-medium capitalize">{event.eventType || event.type || "evento"}</p>
+                                <p className="text-xs text-muted-foreground">{formatDate(event.createdAt || event.date)}</p>
+                              </div>
+                              {event.eventDescription && (
+                                <p className="text-sm mt-1">{event.eventDescription}</p>
+                              )}
+                              {(oldLabel || newLabel) && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {oldLabel ? `De: ${oldLabel}` : null}
+                                  {oldLabel && newLabel ? " → " : null}
+                                  {newLabel ? `Para: ${newLabel}` : null}
+                                </p>
+                              )}
+                              {event.payload && Object.keys(event.payload).length > 0 && (
+                                <div className="mt-2 text-xs bg-muted/30 p-2 rounded border">
+                                  {Object.entries(event.payload).map(([k, v]) => (
+                                    <div key={k} className="flex gap-1">
+                                      <span className="text-muted-foreground">{friendlyKey(k)}:</span>
+                                      <span>{friendlyValue(k, v)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              {event.comment && <p className="text-sm mt-1">{event.comment}</p>}
+                            </div>
+                          </div>
+                        )
+                      })
                   ) : (
                     <p className="text-muted-foreground">Nenhum evento registrado ainda.</p>
                   )}

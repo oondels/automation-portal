@@ -72,8 +72,6 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getProject = (id: string) => {
-    console.log('getProject called with id:', id);
-    console.log('projects array:', projects);
     return projects.find((project) => project.id === id);
   };
 

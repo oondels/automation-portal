@@ -73,8 +73,10 @@ export type Project = {
 export type TimelineEvent = {
   id: string;
   projectId: string;
-  type: string;
+  type?: string;
+  eventType?: string;
   date: string;
+  createdAt?: string;
   userId: string | User;
   comment?: string;
 };
