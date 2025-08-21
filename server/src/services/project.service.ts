@@ -348,4 +348,39 @@ export class ProjectService {
       throw new AppError("Error resuming project.");
     }
   }
+
+  async complete(projectId: string, user: User, service: string): Promise<Project> {
+    try {
+      const project = await this.getProject(projectId)
+
+      if (project.status !== ProjectStatus.IN_PROGRESS) throw new AppError("Only projects with status 'in_progress' can be completed!")
+      if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
+        throw new AppError("Only the user attending the request can complete it.", 401)
+      }
+
+      const now = new Date();
+      const oldStatus = project.status
+      project.status = ProjectStatus.COMPLETED
+      project.concludedAt = now
+      project.updatedAt = now
+
+      await this.projectRepository.save(project)
+
+      await this.appendTimeline({
+        project,
+        userRegistration: Number(user.matricula),
+        eventType: 'concluido',
+        description: `Projeto concluído por ${user.usuario}`,
+        oldStatus,
+        newStatus: project.status,
+        payload: { service }
+      })
+
+      return project
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      console.error("Error completing project:", error);
+      throw new AppError("Error completing project.");
+    }
+  }
 }

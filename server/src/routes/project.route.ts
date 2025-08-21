@@ -30,3 +30,5 @@ projectRoute.put("/:id/attend/:service", AuthMiddleware, projectController.atten
 projectRoute.put("/:id/pause/:service", AuthMiddleware, projectController.pauseProject.bind(projectController))
 
 projectRoute.put("/:id/resume/:service", AuthMiddleware, projectController.resumeProject.bind(projectController))
+
+projectRoute.put("/:id/complete/:service", AuthMiddleware, projectController.completeProject.bind(projectController))

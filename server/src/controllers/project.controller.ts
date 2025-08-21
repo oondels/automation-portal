@@ -167,4 +167,25 @@ export class ProjectController {
       next(error)
     }
   }
+
+  async completeProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id, service } = req.params
+      const user = req.user as User
+
+      this.checkService(service)
+      const project = await this.projectService.complete(id, user, service)
+
+      res.status(200).json({
+        message: "Project completed successfully.",
+        data: {
+          status: project.status,
+          concludedAt: project.concludedAt,
+        }
+      })
+      return
+    } catch (error) {
+      next(error)
+    }
+  }
 }

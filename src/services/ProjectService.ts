@@ -62,6 +62,16 @@ class ProjectService {
       throw error;
     }
   }
+
+  async completeProject(id: string, service: string) {
+    try {
+      const response = await api.put(`/api/projects/${id}/complete/${service}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error completing project:", error);
+      throw error;
+    }
+  }
 }
 
 export const projectService = new ProjectService();

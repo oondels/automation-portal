@@ -420,7 +420,16 @@ export function ProjectDetailsPage() {
                     <Pause className="mr-2 h-4 w-4" />
                     Pausar
                   </Button>
-                  <Button size="sm">
+                  <Button size="sm" onClick={async () => {
+                    try {
+                      await projectService.completeProject(project.id, "automation");
+                      updateProjectStatus(project.id, "completed", user?.id || "system");
+                      notification.success("Sucesso!", "Projeto concluído com sucesso.", 3000);
+                    } catch (error) {
+                      console.error("Error completing project:", error);
+                      notification.error("Erro!", "Erro ao concluir o projeto.", 3000);
+                    }
+                  }}>
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Concluir
                   </Button>
