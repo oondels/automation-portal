@@ -94,16 +94,16 @@ export function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="Enter your email"
+                  placeholder="Usuário"
                 />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Senha</Label>
-                  <Button variant="link" type="button" className="h-auto p-0 text-xs">
+                  {/* <Button variant="link" type="button" className="h-auto p-0 text-xs">
                     Esqueceu a senha?
-                  </Button>
+                  </Button> */}
                 </div>
                 <Input
                   id="password"
@@ -111,7 +111,7 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  placeholder="Enter your password"
+                  placeholder="Senha"
                 />
               </div>
             </div>
