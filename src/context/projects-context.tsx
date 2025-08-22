@@ -3,6 +3,7 @@ import { Project, ProjectStatus } from "../types";
 // import { mockProjects } from "../data/mockData";
 import axios from "axios";
 import { ip } from "../config/ip";
+import {api} from "../services/httpClient";
 
 interface ProjectsContextType {
   projects: Project[];
@@ -20,8 +21,8 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setIsLoading(true);
-    axios
-      .get(`${ip}:3043/api/projects/`)
+    api
+      .get(`/api/projects/`)
       .then((response) => {
         setProjects(response.data.data);
       })
