@@ -1,10 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
-  base: "/automacao-dass/",
+export default defineConfig(({ mode }) => ({
+  base: mode === 'development' ? '/' : '/automacao-dass/',
   plugins: [react()],
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
-});
+  optimizeDeps: {},
+}));
