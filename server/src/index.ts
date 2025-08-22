@@ -17,7 +17,7 @@ AppDataSource.initialize()
       const PORT = config.port;
 
       app.use(cookieParser())
-      app.use(cors({ origin: ["http://localhost:5173", "http://10.100.1.43", "http://10.100.1.43:5173", "http://10.100.1.43:9137", "http://localhost:9137"], credentials: true }))
+      app.use(cors({ origin: ["http://localhost:5173", "http://10.100.1.43", "http://10.100.1.43:5173", "http://10.100.1.43:3046", "http://localhost:3046"], credentials: true }))
       app.use(express.json())
       app.use("/api/projects/", projectRoute)
       // Error Handler
