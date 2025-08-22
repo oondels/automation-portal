@@ -14,4 +14,4 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/.env.production ./
 
 EXPOSE 3043
-CMD ["node", "dist/penseAja.js"]
+CMD ["node", "dist/index.js"]

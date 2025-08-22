@@ -1,11 +1,11 @@
 services:
-  pense_aja_service:
+  server-automation_portal_service:
     build: .
-    container_name: pense_aja_service
+    container_name: server-automation_portal_service
     ports:
       - "3043:3043"
     env_file:
-      - .env.prod
+      - .env.production
     environment:
       - NODE_ENV=production
     networks:
