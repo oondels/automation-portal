@@ -6,5 +6,5 @@ services:
     environment:
       - NODE_ENV=production
     ports:
-      - "3043:80"
+      - "9137:80"
     restart: unless-stopped
