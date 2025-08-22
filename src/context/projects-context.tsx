@@ -21,7 +21,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get(`${ip}:9137/api/projects/`)
+      .get(`${ip}:3043/api/projects/`)
       .then((response) => {
         setProjects(response.data.data);
       })
@@ -35,7 +35,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
 
   const addProject = async (projectData: Omit<Project, "id">): Promise<Project> => {
     try {
-      const response = await axios.post(`${ip}:9137/api/projects/`, projectData, { withCredentials: true });
+      const response = await axios.post(`${ip}:3043/api/projects/`, projectData, { withCredentials: true });
       const project = response.data as Project;
 
       setProjects((prev) => [...prev, project]);

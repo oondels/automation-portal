@@ -7,7 +7,7 @@ export const authApi = axios.create({
 });
 
 export const api = axios.create({
-  baseURL: `${ip}:9137`,
+  baseURL: `${ip}:3043`,
   withCredentials: true
 });
 
