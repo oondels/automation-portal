@@ -19,11 +19,11 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Check if user is logged in (simplified for demo)
-  // const isAuthenticated = localStorage.getItem('user') !== null;
+  const isAuthenticated = localStorage.getItem('user') !== null;
 
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return <>{children}</>;
 };
@@ -63,11 +63,9 @@ function App() {
               <Route
                 path="/projects"
                 element={
-                  <ProtectedRoute>
                     <MainLayout>
                       <ProjectsPage />
                     </MainLayout>
-                  </ProtectedRoute>
                 }
               />
 

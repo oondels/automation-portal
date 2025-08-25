@@ -1,14 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import {
-  Activity,
   FolderKanban,
   Layout,
-  ClipboardList,
   FileSpreadsheet,
   ListPlus,
   Settings,
   X,
   Menu,
+  LogOut,
+  LogIn
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -43,36 +43,59 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
     },
   };
 
+  const handleLoginOut = () => {
+    if (user) {
+      localStorage.removeItem('user');
+      sessionStorage.clear();
+      document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      });
+    }
+    window.location.href = "/";
+  };
+
   const menuItems = [
     {
       title: "Dashboard",
       icon: <Layout size={20} />,
       path: "/dashboard",
       onClick: () => isMobile && setIsOpen(false),
+      disabled: false,
     },
     {
       title: "Projetos",
       icon: <FolderKanban size={20} />,
       path: "/projects",
       onClick: () => isMobile && setIsOpen(false),
+      disabled: false,
     },
     {
       title: "Novo Projeto",
       icon: <ListPlus size={20} />,
       path: "/new-request",
       onClick: () => isMobile && setIsOpen(false),
+      disabled: false,
     },
     {
       title: "Relatórios",
       icon: <FileSpreadsheet size={20} />,
       path: "/reports",
       onClick: () => isMobile && setIsOpen(false),
+      disabled: true,
     },
     {
       title: "Configurações",
       icon: <Settings size={20} />,
       path: "/settings",
       onClick: () => isMobile && setIsOpen(false),
+      disabled: true,
+    },
+    {
+      title: user ? 'Sair' : "Entrar",
+      icon: user ? <LogOut size={20} /> : <LogIn size={20} />,
+      path: user ? "#" : "/login",
+      onClick: handleLoginOut,
+      disabled: false,
     },
   ];
 
@@ -130,12 +153,13 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
                     <Link
                       key={item.path}
                       to={item.path}
-                      onClick={item.onClick}
+                      onClick={item.disabled ? (e) => e.preventDefault() : item.onClick}
                       className={cn(
                         "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                         location.pathname === item.path
                           ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-primary/20 hover:text-accent-foreground"
+                          : "text-muted-foreground hover:bg-primary/20 hover:text-accent-foreground",
+                          item.disabled && "cursor-not-allowed opacity-50"
                       )}
                     >
                       {item.icon}
