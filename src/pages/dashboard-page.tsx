@@ -92,7 +92,7 @@ export function DashboardPage() {
           </p>
         </motion.div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleExportReport}>
+          <Button variant="outline" onClick={handleExportReport} className="cursor-not-allowed opacity-50">
             <FileDown className="mr-2 h-4 w-4" />
             Exportar Relatório
           </Button>
@@ -112,7 +112,7 @@ export function DashboardPage() {
               Para saber prazos, consulte esta tela. Para sugestões de melhoria ou dúvidas, utilize o menu de contato.
             </p>
           </div>
-          <Button variant="ghost" size="sm">
+          <Button className="cursor-not-allowed opacity-50" variant="ghost" size="sm">
             <MessageCircle className="mr-2 h-4 w-4" />
             Contato
           </Button>
@@ -258,7 +258,7 @@ export function DashboardPage() {
 
       {/* Charts Grid */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Evolução do Backlog</CardTitle>
             <CardDescription>
@@ -288,7 +288,7 @@ export function DashboardPage() {
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card>
           <CardHeader>

@@ -214,14 +214,14 @@ export function NewRequestPage() {
                   value={formData.projectSector}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, projectSector: value }))}
                 >
-                  <SelectTrigger className="w-full rounded-lg border-muted-foreground/20 focus-visible:ring-primary">
+                    <SelectTrigger className="w-full rounded-lg border-muted-foreground/20 focus-visible:ring-primary">
                     <SelectValue placeholder="Selecione um Tipo de Projeto" />
-                  </SelectTrigger>
-                  <SelectContent>
+                    </SelectTrigger>
+                    <SelectContent>
                     <SelectItem value="automation">Automação</SelectItem>
-                    <SelectItem value="carpentry">Marcenaria</SelectItem>
-                    <SelectItem value="metalwork">Serralheria</SelectItem>
-                  </SelectContent>
+                    <SelectItem value="carpentry" disabled>Marcenaria</SelectItem>
+                    <SelectItem value="metalwork" disabled>Serralheria</SelectItem>
+                    </SelectContent>
                 </Select>
               </div>
 

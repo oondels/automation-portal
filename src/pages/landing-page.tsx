@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
+// import { Badge } from "../components/ui/badge";
 
 export function LandingPage() {
   return (
@@ -56,13 +56,13 @@ export function LandingPage() {
               através da automação inteligente.
             </p>
             <div className="flex justify-center gap-4">
-              <Link to="/login">
+              <Link to="/projects">
                 <Button size="lg" className="gap-2">
                   Explore Projetos
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/new-request">
                 <Button size="lg" variant="outline" className="gap-2">
                   Solicite um Novo Projeto
                   <ChevronRight className="h-4 w-4" />
@@ -124,7 +124,7 @@ export function LandingPage() {
       </section>
 
       {/* Team Section */}
-      <section className="py-24">
+      {/* <section className="py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -186,7 +186,7 @@ export function LandingPage() {
             </div>
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       {/* Features Section */}
       <section className="bg-muted/50 py-24">
@@ -253,9 +253,6 @@ export function LandingPage() {
             <div className="flex flex-col items-center gap-2 sm:flex-row">
               <p className="text-sm text-muted-foreground">Contato: TI e Automação - Ramal 4702</p>
               <span className="hidden sm:inline text-muted-foreground">•</span>
-              <Link to="/login" className="text-sm text-primary hover:text-primary/80">
-                Acesso Interno
-              </Link>
             </div>
           </div>
         </div>
