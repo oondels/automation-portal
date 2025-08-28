@@ -154,7 +154,11 @@ export function ProjectDetailsPage() {
   const approveProject = async (status: string) => {
     try {
       if (project.urgency === editedProject.urgency) {
-        alert("A urgência do projeto foi mantida.");
+        notification.warning(
+        "Aviso!",
+        `A urgência do projeto foi mantida.`,
+        1500
+      );
       }
 
       await projectService.approveProject(project.id, status, editedProject.urgency as string);
