@@ -132,7 +132,7 @@ export function ProjectDetailsPage() {
     }
   };
 
-  if (user?.setor !== "AUTOMACAO" && user?.funcao !== "GERENTE" && project.status === "requested") {
+  if (user?.setor !== "AUTOMACAO" && user?.setor !== "TI" && user?.funcao !== "GERENTE" && project.status === "requested") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <Clock className="h-12 w-12 text-yellow-200" />
