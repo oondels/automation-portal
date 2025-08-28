@@ -13,7 +13,7 @@ type RolePermissionMap = {
 const permissionMap: RolePermissionMap = {
   approveProject: {
     allowedRoles: ["GERENTE"],
-    allowedUsers: ["SERGIO.GONCALVES", "EDUARDO.BISOL", "HENDRIUS.SANTANA"]
+    allowedUsers: ["SERGIO.GONCALVES", "EDUARDO.BISOL", "HENDRIUS.SANTANA", "MARCOS.SOARES"]
   },
   updateEstimatedTime: {
     allowedRoles: ["ANALISTA", "COORDENADOR", "TI", "MARCENEIRO", "SERRALHEIRO"],
