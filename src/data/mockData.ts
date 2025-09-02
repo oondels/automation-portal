@@ -68,6 +68,7 @@ export const sectors: Sector[] = [
   { id: "17", name: "SSMA" },
   { id: "18", name: "Tempos e Métodos" },
   { id: "19", name: "TI" },
+  { id: "20", name: "Outros" },
 ];
 
 export const statuses: Record<ProjectStatus, { label: string; color: string }> = {
