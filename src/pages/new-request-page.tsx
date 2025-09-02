@@ -44,6 +44,9 @@ const expectedGains = [
   { id: "people", label: "Pessoas" },
   { id: "costs", label: "Custos Operacionais" },
   { id: "ergonomics", label: "Ergonomia" },
+  { id: "qld", label: "Qualidade" },
+  { id: "mb", label: "Meio Ambiente" },
+  { id: "seguranca", label: "Segurança" },
 ];
 
 export function NewRequestPage() {

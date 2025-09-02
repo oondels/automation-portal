@@ -49,11 +49,25 @@ export const users: User[] = [
 ];
 
 export const sectors: Sector[] = [
-  { id: "1", name: "Manutenção" },
-  { id: "2", name: "Melhoria Contínua" },
-  { id: "3", name: "Qualidade" },
-  { id: "4", name: "Logística" },
-  { id: "5", name: "Refeitório" },
+  { id: "1", name: "Administrativo" },
+  { id: "2", name: "Automação" },
+  { id: "3", name: "Corte Automático" },
+  { id: "4", name: "DP" },
+  { id: "5", name: "Fabrica 1" },
+  { id: "6", name: "Fabrica 2" },
+  { id: "7", name: "Manutenção" },
+  { id: "8", name: "Melhoria Contínua" },
+  { id: "9", name: "Modelagem" },
+  { id: "10", name: "PCP" },
+  { id: "11", name: "Pré Fabricado" },
+  { id: "12", name: "Qualidade" },
+  { id: "13", name: "Química" },
+  { id: "14", name: "Refeitório" },
+  { id: "15", name: "RH" },
+  { id: "16", name: "Serigrafia" },
+  { id: "17", name: "SSMA" },
+  { id: "18", name: "Tempos e Métodos" },
+  { id: "19", name: "TI" },
 ];
 
 export const statuses: Record<ProjectStatus, { label: string; color: string }> = {

@@ -1,15 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import {
-  FolderKanban,
-  Layout,
-  FileSpreadsheet,
-  ListPlus,
-  Settings,
-  X,
-  Menu,
-  LogOut,
-  LogIn
-} from "lucide-react";
+import { FolderKanban, Layout, FileSpreadsheet, ListPlus, Settings, X, Menu, LogOut, LogIn } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "../theme-toggle";
@@ -24,7 +14,7 @@ interface SidebarProps {
 
 export function Sidebar({ isMobile = false }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(!isMobile);
-  
+
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -43,15 +33,20 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
     },
   };
 
-  const handleLoginOut = () => {
-    if (user) {
-      localStorage.removeItem('user');
-      sessionStorage.clear();
-      document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-      });
+  const handleLoginOut = (action: string) => {
+    if (action === "entrar") {
+      return;
     }
-    window.location.href = "/";
+
+    if (user) {
+      localStorage.removeItem("user");
+      sessionStorage.clear();
+      document.cookie.split(";").forEach(function (c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
+      window.location.href = "/";
+    }
   };
 
   const menuItems = [
@@ -91,7 +86,7 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
       disabled: true,
     },
     {
-      title: user ? 'Sair' : "Entrar",
+      title: user ? "Sair" : "Entrar",
       icon: user ? <LogOut size={20} /> : <LogIn size={20} />,
       path: user ? "#" : "/login",
       onClick: handleLoginOut,
@@ -159,7 +154,7 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
                         location.pathname === item.path
                           ? "bg-primary/10 text-primary"
                           : "text-muted-foreground hover:bg-primary/20 hover:text-accent-foreground",
-                          item.disabled && "cursor-not-allowed opacity-50"
+                        item.disabled && "cursor-not-allowed opacity-50"
                       )}
                     >
                       {item.icon}
