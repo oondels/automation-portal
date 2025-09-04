@@ -185,7 +185,7 @@ export function DashboardPage() {
       </div>
 
       {/* Team Capacity Card */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Capacidade da Equipe</CardTitle>
           <CardDescription>
@@ -237,7 +237,7 @@ export function DashboardPage() {
             </p>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Charts Grid */}
       <div className="grid gap-4 md:grid-cols-2">
