@@ -65,6 +65,7 @@ export type Project = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   deletedAt?: Date | string | null;
+  estimatedEndDate?: Date | string;
   // Frontend specific fields for backwards compatibility
   timeline?: TimelineEvent[];
   logs?: LogEntry[];

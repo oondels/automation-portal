@@ -4,18 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Activity, 
   AlertCircle, 
-  ArrowDown, 
-  ArrowUp, 
   Clock, 
-  Download,
   FileDown,
-  Filter, 
-  HelpCircle,
   Info,
-  Loader2, 
   MessageCircle,
-  Minus, 
-  Users 
 } from "lucide-react";
 import { 
   Card, 
@@ -26,6 +18,8 @@ import {
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { useProjects } from "../context/projects-context";
+// import { Project, ProjectStatus, ProjectUrgency } from "../types";
+import { sectors } from "../data/mockData";
 import {  ResponsiveContainer, Tooltip, Cell, Pie, PieChart } from "recharts";
 
 export function DashboardPage() {
@@ -46,7 +40,7 @@ export function DashboardPage() {
   const capacityPercentage = (currentProjectsPerMember / maxProjectsPerMember) * 100;
   const isOverloaded = capacityPercentage > 85;
 
-  // Monthly backlog data (last 6 months)
+  // Monthly backlog data (last 6 months)g
   const backlogData = [
     { month: "Jan", total: 12, completed: 8 },
     { month: "Feb", total: 15, completed: 10 },
