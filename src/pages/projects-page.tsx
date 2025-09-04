@@ -6,14 +6,14 @@ import {
   AlertCircle,
   ArrowDown,
   ArrowUp,
-  Calendar,
+  BrainCircuit,
   Clock,
   Grid,
   Minus,
   Plus,
   Search,
   SlidersHorizontal,
-  X
+  X,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -35,10 +35,10 @@ export function ProjectsPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   // Calculate KPIs
-  const totalActive = projects.filter(p => p.status !== "completed" && p.status !== "rejected").length;
-  const pendingApproval = projects.filter(p => p.status === "requested").length;
-  const inProgress = projects.filter(p => p.status === "in_progress").length;
-  const delayed = projects.filter(p => {
+  const totalActive = projects.filter((p) => p.status !== "completed" && p.status !== "rejected").length;
+  const pendingApproval = projects.filter((p) => p.status === "requested").length;
+  const inProgress = projects.filter((p) => p.status === "in_progress").length;
+  const delayed = projects.filter((p) => {
     if (!p.estimatedDurationTime || p.status === "completed" || p.status === "rejected") return false;
     const estimatedEndDate = calculateEstimatedEndDate(p.startDate, p.estimatedDurationTime);
     return estimatedEndDate < new Date();
@@ -53,16 +53,16 @@ export function ProjectsPage() {
 
   // Filter projects
   const filteredProjects = projects.filter((project) => {
-    const matchesSearch = 
+    const matchesSearch =
       project.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project?.cell?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = statusFilter === "all" || project.status === statusFilter;
     const matchesSector = sectorFilter === "all" || project.sector === sectorFilter;
     const matchesUrgency = urgencyFilter === "all" || project.urgency === urgencyFilter;
-    
+
     return matchesSearch && matchesStatus && matchesSector && matchesUrgency;
   });
 
@@ -105,13 +105,13 @@ export function ProjectsPage() {
     const startDate = project.startDate instanceof Date ? project.startDate : new Date(project.startDate);
     const endDate = calculateEstimatedEndDate(project.startDate, project.estimatedDurationTime);
     const today = new Date();
-    
+
     const total = endDate.getTime() - startDate.getTime();
     const elapsed = today.getTime() - startDate.getTime();
     const progress = Math.min(Math.max((elapsed / total) * 100, 0), 100);
-    
-    const isDelayed = today > endDate && project.status !== 'completed';
-    
+
+    const isDelayed = today > endDate && project.status !== "completed";
+
     return { progress, isDelayed, endDate };
   };
 
@@ -119,14 +119,15 @@ export function ProjectsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="text-3xl font-bold tracking-tight">Projetos de Automação</h1>
-          <p className="text-muted-foreground">
-            Gerencie e acompanhe o progresso dos projetos
-          </p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="mb-1 flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">Projetos de Automação </h1>
+            <div className="rounded-2xl bg-primary/10 p-3">
+              <BrainCircuit className="h-8 w-8 text-primary" />
+            </div>
+          </div>
+
+          <p className="text-muted-foreground">Gerencie e acompanhe o progresso dos projetos</p>
         </motion.div>
         <Link to="/new-request">
           <Button>
@@ -142,8 +143,8 @@ export function ProjectsPage() {
           hidden: { opacity: 0 },
           visible: {
             opacity: 1,
-            transition: { staggerChildren: 0.1 }
-          }
+            transition: { staggerChildren: 0.1 },
+          },
         }}
         initial="hidden"
         animate="visible"
@@ -157,9 +158,7 @@ export function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalActive}</div>
-              <p className="text-xs text-muted-foreground">
-                Em diferentes estágios
-              </p>
+              <p className="text-xs text-muted-foreground">Em diferentes estágios</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -172,9 +171,7 @@ export function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{pendingApproval}</div>
-              <p className="text-xs text-muted-foreground">
-                Necessitam análise
-              </p>
+              <p className="text-xs text-muted-foreground">Necessitam análise</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -187,9 +184,7 @@ export function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{inProgress}</div>
-              <p className="text-xs text-muted-foreground">
-                Projetos em execução
-              </p>
+              <p className="text-xs text-muted-foreground">Projetos em execução</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -202,16 +197,14 @@ export function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{delayed}</div>
-              <p className="text-xs text-muted-foreground">
-                Necessitam atenção
-              </p>
+              <p className="text-xs text-muted-foreground">Necessitam atenção</p>
             </CardContent>
           </Card>
         </motion.div>
       </motion.div>
 
       {/* Sector Status Card */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Visão do Setor</CardTitle>
           <CardDescription>Status atual da capacidade da equipe</CardDescription>
@@ -263,15 +256,13 @@ export function ProjectsPage() {
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Projects List */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle>Lista de Projetos</CardTitle>
-          <CardDescription>
-            Gerencie e acompanhe todas as solicitações
-          </CardDescription>
+          <CardDescription>Gerencie e acompanhe todas as solicitações</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-6 space-y-4">
@@ -285,36 +276,20 @@ export function ProjectsPage() {
                   className="pl-9"
                 />
               </div>
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="w-full md:w-auto"
-              >
+              <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="w-full md:w-auto">
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Filtros
                 {(statusFilter !== "all" || sectorFilter !== "all" || urgencyFilter !== "all") && (
                   <Badge variant="secondary" className="ml-2">
-                    {[
-                      statusFilter !== "all",
-                      sectorFilter !== "all",
-                      urgencyFilter !== "all"
-                    ].filter(Boolean).length}
+                    {[statusFilter !== "all", sectorFilter !== "all", urgencyFilter !== "all"].filter(Boolean).length}
                   </Badge>
                 )}
               </Button>
               <div className="flex items-center gap-2">
-                <Button
-                  variant={view === "table" ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setView("table")}
-                >
+                <Button variant={view === "table" ? "default" : "outline"} size="icon" onClick={() => setView("table")}>
                   <Activity className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant={view === "grid" ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setView("grid")}
-                >
+                <Button variant={view === "grid" ? "default" : "outline"} size="icon" onClick={() => setView("grid")}>
                   <Grid className="h-4 w-4" />
                 </Button>
               </div>
@@ -346,10 +321,7 @@ export function ProjectsPage() {
                       </SelectContent>
                     </Select>
 
-                    <Select
-                      value={sectorFilter}
-                      onValueChange={(value) => setSectorFilter(value)}
-                    >
+                    <Select value={sectorFilter} onValueChange={(value) => setSectorFilter(value)}>
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Setor" />
                       </SelectTrigger>
@@ -381,11 +353,7 @@ export function ProjectsPage() {
                     </Select>
 
                     {(statusFilter !== "all" || sectorFilter !== "all" || urgencyFilter !== "all") && (
-                      <Button
-                        variant="ghost"
-                        onClick={clearFilters}
-                        className="h-10"
-                      >
+                      <Button variant="ghost" onClick={clearFilters} className="h-10">
                         <X className="mr-2 h-4 w-4" />
                         Limpar Filtros
                       </Button>
@@ -406,14 +374,8 @@ export function ProjectsPage() {
                 <AlertCircle className="h-10 w-10 text-muted-foreground" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">Nenhum projeto encontrado</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Tente ajustar seus filtros ou critérios de busca.
-              </p>
-              <Button
-                variant="outline"
-                onClick={clearFilters}
-                className="mt-4"
-              >
+              <p className="mt-2 text-sm text-muted-foreground">Tente ajustar seus filtros ou critérios de busca.</p>
+              <Button variant="outline" onClick={clearFilters} className="mt-4">
                 Limpar Filtros
               </Button>
             </motion.div>
@@ -422,56 +384,38 @@ export function ProjectsPage() {
               <table className="w-full caption-bottom text-sm">
                 <thead className="border-b">
                   <tr>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Projeto
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Setor
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Status
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Urgência
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Progresso
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Prazo
-                    </th>
-                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
-                      Ações
-                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Projeto</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Setor</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Urgência</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Progresso</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Prazo</th>
+                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredProjects.map((project) => {
                     const urgencyInfo = getUrgencyInfo(project.urgency);
                     const { progress, isDelayed, endDate } = getProjectProgress(project);
-                    
+
                     return (
                       <motion.tr
                         key={project.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className={`border-b transition-colors hover:bg-muted/50 ${
-                          isDelayed ? 'bg-destructive/5' : ''
+                          isDelayed ? "bg-destructive/5" : ""
                         }`}
                       >
                         <td className="p-4 align-middle">
                           <div className="flex flex-col">
                             <span className="font-medium">{project.projectName}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {project.cell}
-                            </span>
+                            <span className="text-xs text-muted-foreground">{project.cell}</span>
                           </div>
                         </td>
                         <td className="p-4 align-middle">{project.sector}</td>
                         <td className="p-4 align-middle">
-                          <Badge className={statuses[project.status].color}>
-                            {statuses[project.status].label}
-                          </Badge>
+                          <Badge className={statuses[project.status].color}>{statuses[project.status].label}</Badge>
                         </td>
                         <td className="p-4 align-middle">
                           <div className={`flex items-center gap-2 ${urgencyInfo.color}`}>
@@ -483,23 +427,17 @@ export function ProjectsPage() {
                           <div className="w-full space-y-1">
                             <div className="h-2 rounded-full bg-muted">
                               <div
-                                className={`h-2 rounded-full ${
-                                  isDelayed ? 'bg-destructive' : 'bg-primary'
-                                }`}
+                                className={`h-2 rounded-full ${isDelayed ? "bg-destructive" : "bg-primary"}`}
                                 style={{ width: `${progress}%` }}
                               />
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                              {Math.round(progress)}% decorrido
-                            </p>
+                            <p className="text-xs text-muted-foreground">{Math.round(progress)}% decorrido</p>
                           </div>
                         </td>
                         <td className="p-4 align-middle">
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>
-                              {formateInterval(project.estimatedDurationTime as object)}
-                            </span>
+                            <span>{formateInterval(project.estimatedDurationTime as object)}</span>
                           </div>
                         </td>
                         <td className="p-4 text-right align-middle">
@@ -520,14 +458,10 @@ export function ProjectsPage() {
               {filteredProjects.map((project) => {
                 const urgencyInfo = getUrgencyInfo(project.urgency);
                 const { progress, isDelayed, endDate } = getProjectProgress(project);
-                
+
                 return (
-                  <motion.div
-                    key={project.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                  >
-                    <Card className={isDelayed ? 'border-destructive' : ''}>
+                  <motion.div key={project.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                    <Card className={isDelayed ? "border-destructive" : ""}>
                       <CardContent className="p-6">
                         <div className="mb-4 flex items-start justify-between">
                           <div className="space-y-1">
@@ -536,17 +470,15 @@ export function ProjectsPage() {
                               {project.sector} - {project.cell}
                             </p>
                           </div>
-                          <Badge className={statuses[project.status].color}>
-                            {statuses[project.status].label}
-                          </Badge>
+                          <Badge className={statuses[project.status].color}>{statuses[project.status].label}</Badge>
                         </div>
-                        
+
                         <div className="space-y-4">
                           <div className={`flex items-center gap-2 ${urgencyInfo.color}`}>
                             {urgencyInfo.icon}
                             <span className="capitalize">Urgência: {translateUrgency(project.urgency)}</span>
                           </div>
-                          
+
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-sm">
                               <span>Progresso</span>
@@ -554,22 +486,20 @@ export function ProjectsPage() {
                             </div>
                             <div className="h-2 rounded-full bg-muted">
                               <div
-                                className={`h-2 rounded-full ${
-                                  isDelayed ? 'bg-destructive' : 'bg-primary'
-                                }`}
+                                className={`h-2 rounded-full ${isDelayed ? "bg-destructive" : "bg-primary"}`}
                                 style={{ width: `${progress}%` }}
                               />
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center gap-2 text-sm">
                             <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span className={isDelayed ? 'text-destructive' : ''}>
+                            <span className={isDelayed ? "text-destructive" : ""}>
                               {formateInterval(project.estimatedDurationTime as object)}
                             </span>
                           </div>
                         </div>
-                        
+
                         <div className="mt-4">
                           <Link to={`/project/${project.id}`}>
                             <Button className="w-full" variant="outline">

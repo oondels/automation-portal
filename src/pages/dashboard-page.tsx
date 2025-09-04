@@ -25,22 +25,11 @@ import {
   CardTitle 
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import { Input } from "../components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { useProjects } from "../context/projects-context";
-import { Project, ProjectStatus, ProjectUrgency } from "../types";
-import { formatDate } from "../lib/utils";
-import { statuses, sectors, urgencies } from "../data/mockData";
-import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, Pie, PieChart } from "recharts";
+import {  ResponsiveContainer, Tooltip, Cell, Pie, PieChart } from "recharts";
 
 export function DashboardPage() {
   const { projects } = useProjects();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("all");
-  const [sectorFilter, setSectorFilter] = useState<string>("all");
-  const [urgencyFilter, setUrgencyFilter] = useState<ProjectUrgency | "all">("all");
-
   // Calculate key metrics
   const totalActive = projects.filter(p => p.status !== "completed" && p.status !== "rejected").length;
   const pendingApproval = projects.filter(p => p.status === "requested").length;
@@ -120,7 +109,7 @@ export function DashboardPage() {
       </Card>
 
       {/* Capacity Warning */}
-      {isOverloaded && (
+      {/* {isOverloaded && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -144,7 +133,7 @@ export function DashboardPage() {
             </Button>
           </div>
         </motion.div>
-      )}
+      )} */}
 
       {/* Key Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

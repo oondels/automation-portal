@@ -13,7 +13,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isMobile = false }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(!isMobile);
+  const [isOpen, setIsOpen] = useState(false);
+  // const [isOpen, setIsOpen] = useState(!isMobile);
 
   const location = useLocation();
   const { user, logout } = useAuth();

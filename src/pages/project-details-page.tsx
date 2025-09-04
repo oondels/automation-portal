@@ -53,6 +53,19 @@ export function ProjectDetailsPage() {
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "logs">("overview");
 
+  function getProjectType(project_tag: string): string {
+    const projectTypeLabels: Record<string, string> = {
+      app_development: "Desenvolvimento de App",
+      process_automation: "Automação de Processo",
+      app_improvement: "Melhoria de App",
+      app_fix: "Correção de App",
+      carpentry: "Marcenaria",
+      metalwork: "Serralheria",
+    };
+
+    return projectTypeLabels[project.projectType] || project.projectType || "Não informado";
+  }
+
   function isZeroInterval(i?: IntervalObject): boolean {
     if (!i) return true;
     return Object.values(i).every((v) => !v || v <= 0);
@@ -132,7 +145,12 @@ export function ProjectDetailsPage() {
     }
   };
 
-  if (user?.setor !== "AUTOMACAO" && user?.setor !== "TI" && user?.funcao !== "GERENTE" && project.status === "requested") {
+  if (
+    user?.setor !== "AUTOMACAO" &&
+    user?.setor !== "TI" &&
+    user?.funcao !== "GERENTE" &&
+    project.status === "requested"
+  ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <Clock className="h-12 w-12 text-yellow-200" />
@@ -154,11 +172,7 @@ export function ProjectDetailsPage() {
   const approveProject = async (status: string) => {
     try {
       if (project.urgency === editedProject.urgency) {
-        notification.warning(
-        "Aviso!",
-        `A urgência do projeto foi mantida.`,
-        1500
-      );
+        notification.warning("Aviso!", `A urgência do projeto foi mantida.`, 1500);
       }
 
       await projectService.approveProject(project.id, status, editedProject.urgency as string);
@@ -201,7 +215,7 @@ export function ProjectDetailsPage() {
         notification.error("Erro!", "Erro ao pausar o projeto.", 3000);
       }
     }
-  }
+  };
 
   const resumeProject = async () => {
     try {
@@ -420,20 +434,28 @@ export function ProjectDetailsPage() {
 
               {project.status === "in_progress" && (
                 <>
-                  <Button onClick={handlePauseProject} className="hover:bg-yellow-600 py-2 rounded transition-all duration-200 active:scale-95 active:bg-yellow-600" variant="outline" size="sm">
+                  <Button
+                    onClick={handlePauseProject}
+                    className="hover:bg-yellow-600 py-2 rounded transition-all duration-200 active:scale-95 active:bg-yellow-600"
+                    variant="outline"
+                    size="sm"
+                  >
                     <Pause className="mr-2 h-4 w-4" />
                     Pausar
                   </Button>
-                  <Button size="sm" onClick={async () => {
-                    try {
-                      await projectService.completeProject(project.id, "automation");
-                      updateProjectStatus(project.id, "completed", user?.id || "system");
-                      notification.success("Sucesso!", "Projeto concluído com sucesso.", 3000);
-                    } catch (error) {
-                      console.error("Error completing project:", error);
-                      notification.error("Erro!", "Erro ao concluir o projeto.", 3000);
-                    }
-                  }}>
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await projectService.completeProject(project.id, "automation");
+                        updateProjectStatus(project.id, "completed", user?.id || "system");
+                        notification.success("Sucesso!", "Projeto concluído com sucesso.", 3000);
+                      } catch (error) {
+                        console.error("Error completing project:", error);
+                        notification.error("Erro!", "Erro ao concluir o projeto.", 3000);
+                      }
+                    }}
+                  >
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Concluir
                   </Button>
@@ -692,7 +714,7 @@ export function ProjectDetailsPage() {
                   <Label className="text-sm font-medium text-muted-foreground">Tipo de Projeto</Label>
                   <div className="flex items-center mt-1">
                     <Tag className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span>{project.projectType || "Não informado"}</span>
+                    <span>{getProjectType(project.projectType) || "Não informado"}</span>
                   </div>
                 </div>
 
@@ -847,10 +869,14 @@ export function ProjectDetailsPage() {
                 <div className="space-y-4">
                   {project.timeline && Array.isArray(project.timeline) && project.timeline.length > 0 ? (
                     [...project.timeline]
-                      .sort((a: any, b: any) => new Date(b.createdAt ?? b.date ?? 0).getTime() - new Date(a.createdAt ?? a.date ?? 0).getTime())
+                      .sort(
+                        (a: any, b: any) =>
+                          new Date(b.createdAt ?? b.date ?? 0).getTime() -
+                          new Date(a.createdAt ?? a.date ?? 0).getTime()
+                      )
                       .map((event: any) => {
                         const oldLabel = event.oldStatus
-                          ? (event.oldStatus === "requested"
+                          ? event.oldStatus === "requested"
                             ? "Solicitado/Criado"
                             : event.oldStatus === "approved"
                             ? "Aprovado"
@@ -862,10 +888,10 @@ export function ProjectDetailsPage() {
                             ? "Concluído"
                             : event.oldStatus === "rejected"
                             ? "Rejeitado"
-                            : event.oldStatus)
+                            : event.oldStatus
                           : null;
                         const newLabel = event.newStatus
-                          ? (event.newStatus === "requested"
+                          ? event.newStatus === "requested"
                             ? "Solicitado"
                             : event.newStatus === "approved"
                             ? "Aprovado"
@@ -877,7 +903,7 @@ export function ProjectDetailsPage() {
                             ? "Concluído"
                             : event.newStatus === "rejected"
                             ? "Rejeitado"
-                            : event.newStatus)
+                            : event.newStatus
                           : null;
                         return (
                           <div key={event.id} className="flex items-start space-x-3">
@@ -885,11 +911,11 @@ export function ProjectDetailsPage() {
                             <div className="flex-1">
                               <div className="flex items-center justify-between">
                                 <p className="font-medium capitalize">{event.eventType || event.type || "evento"}</p>
-                                <p className="text-xs text-muted-foreground">{formatDate(event.createdAt || event.date)}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatDate(event.createdAt || event.date)}
+                                </p>
                               </div>
-                              {event.eventDescription && (
-                                <p className="text-sm mt-1">{event.eventDescription}</p>
-                              )}
+                              {event.eventDescription && <p className="text-sm mt-1">{event.eventDescription}</p>}
                               {(oldLabel || newLabel) && (
                                 <p className="text-xs text-muted-foreground mt-1">
                                   {oldLabel ? `De: ${oldLabel}` : null}
@@ -910,7 +936,7 @@ export function ProjectDetailsPage() {
                               {event.comment && <p className="text-sm mt-1">{event.comment}</p>}
                             </div>
                           </div>
-                        )
+                        );
                       })
                   ) : (
                     <p className="text-muted-foreground">Nenhum evento registrado ainda.</p>
