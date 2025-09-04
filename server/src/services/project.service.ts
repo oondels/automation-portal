@@ -105,8 +105,8 @@ export class ProjectService {
         where,
         relations: ['automationTeam', 'requestedBy', 'timeline'],
         order: orderBy,
-        skip,
-        take: limit,
+        // skip,
+        // take: limit,
       });
 
       const totalPages = Math.ceil(total / limit);
