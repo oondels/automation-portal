@@ -183,6 +183,8 @@ export function ProjectDetailsPage() {
       );
     } catch (error: any) {
       notification.error("Erro!", error.response.data.message || "Erro ao atualizar status do projeto.", 3000);
+    } finally {
+      window.location.reload();
     }
   };
 
@@ -213,6 +215,8 @@ export function ProjectDetailsPage() {
       } catch (error) {
         console.error("Error pausing project:", error);
         notification.error("Erro!", "Erro ao pausar o projeto.", 3000);
+      } finally {
+        window.location.reload();
       }
     }
   };
@@ -225,6 +229,8 @@ export function ProjectDetailsPage() {
     } catch (error) {
       console.error("Error resuming project:", error);
       notification.error("Erro!", "Erro ao retomar o projeto.", 3000);
+    } finally {
+      window.location.reload();
     }
   };
 
