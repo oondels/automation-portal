@@ -16,7 +16,10 @@ export function attachInterceptors(api: AxiosInstance, apiAuth: AxiosInstance) {
   const handle401 = async (error: any, instance: AxiosInstance, authInstance: AxiosInstance) => {
     const originalRequest = error?.config
 
-    if (originalRequest.url?.includes("/auth/login")) {
+    if (
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/token/refresh")
+    ) {
       return Promise.reject(error);
     }
 
@@ -57,7 +60,7 @@ export function attachInterceptors(api: AxiosInstance, apiAuth: AxiosInstance) {
         console.error("Sessão expirada. Você precisa fazer login novamente:", refreshError);
 
         setTimeout(() => {
-          sessionStorage.clear();
+          localStorage.clear();
           window.location.reload();
         }, 3000);
       } else {
@@ -70,38 +73,9 @@ export function attachInterceptors(api: AxiosInstance, apiAuth: AxiosInstance) {
     }
   }
 
-
-  api.interceptors.request.use(async (config: any) => {
-    if (
-      !isRefreshing &&
-      !config.url.includes("/auth/token/refresh")
-    ) {
-      isRefreshing = true;
-
-      try {
-        // Tenta renovar o token antes de prosseguir com a requisição original
-        const response = await apiAuth.post("/auth/token/refresh", null, {
-          withCredentials: true,
-        });
-        sessionStorage.setItem("expirationTime", response.data.tokenExpirationTime);
-      } catch (error) {
-        console.warn("Falha no refresh proativo:", error);
-      } finally {
-        isRefreshing = false;
-      }
-    }
-
-    return config;
-  })
-
   // Intercepta as instâncias
   api.interceptors.response.use(
     (res) => res,
     (err) => handle401(err, api, apiAuth)
-  );
-
-  apiAuth.interceptors.response.use(
-    (res) => res,
-    (err) => handle401(err, apiAuth, apiAuth)
   );
 }
