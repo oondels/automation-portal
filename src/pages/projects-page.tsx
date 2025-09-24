@@ -35,10 +35,10 @@ export function ProjectsPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   // Calculate KPIs
-  const totalActive = projects.filter((p) => p.status !== "completed" && p.status !== "rejected").length;
-  const pendingApproval = projects.filter((p) => p.status === "requested").length;
-  const inProgress = projects.filter((p) => p.status === "in_progress").length;
-  const delayed = projects.filter((p) => {
+  const totalActive = projects.filter((p: any) => p.status !== "completed" && p.status !== "rejected").length;
+  const pendingApproval = projects.filter((p: any) => p.status === "requested").length;
+  const inProgress = projects.filter((p: any) => p.status === "in_progress").length;
+  const delayed = projects.filter((p: any) => {
     if (!p.estimatedDurationTime || p.status === "completed" || p.status === "rejected") return false;
     const estimatedEndDate = calculateEstimatedEndDate(p.startDate, p.estimatedDurationTime);
     return estimatedEndDate < new Date();
@@ -52,7 +52,7 @@ export function ProjectsPage() {
   const isOverloaded = capacityPercentage > 85;
 
   // Filter projects
-  const filteredProjects = projects.filter((project) => {
+  const filteredProjects = projects.filter((project: any) => {
     const matchesSearch =
       project.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
