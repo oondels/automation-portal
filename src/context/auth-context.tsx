@@ -20,10 +20,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check for saved user in localStorage
+    const tokenExpiration = localStorage.getItem("tokenExpiration");
+     if (!tokenExpiration) {
+        return;
+      }
+    
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
-      console.log(JSON.parse(savedUser).usuario);
       setUser(JSON.parse(savedUser));
     }
   }, []);

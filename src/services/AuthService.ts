@@ -10,6 +10,13 @@ class AuthService {
     },
       { withCredentials: true });
 
+    const now = new Date();
+    const tokenExpiration = response.data?.tokenExpirationTime || "";
+    if (!tokenExpiration) {
+      throw new Error("Token de autenticação não recebido.");
+    }
+    localStorage.setItem("tokenExpiration", now.getTime() + tokenExpiration);
+
     const decodedUser = JSON.parse(atob(response.data?.userData));
     localStorage.setItem(this.storageKey, JSON.stringify(decodedUser));
 
