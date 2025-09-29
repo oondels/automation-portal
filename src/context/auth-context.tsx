@@ -10,6 +10,7 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   error: string | null;
+  changePassword: (codigoBarras: string, newPassword: string, repeatPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,7 +58,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     toast.success("Logout realizado com sucesso!");
   };
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading, error }}>{children}</AuthContext.Provider>;
+  const changePassword = async (codigoBarras: string, newPassword: string, repeatPassword: string): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const message = await authService.resetPassword(codigoBarras, newPassword, repeatPassword);
+
+      notification.success('Sucesso!', message ?? "Senha redefinida com sucesso!", 2000);
+    } catch (e: unknown) {
+      const error = e as { response?: { status?: number, data?: string } };
+      const errorMessage = error?.response?.data ?? "Erro ao redefinir senha, tente novamente em alguns instantes.";
+
+      notification.error('Falha na Redefinição de Senha', errorMessage || 'Erro interno no servidor de autenticação.', 5000);
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return <AuthContext.Provider value={{ user, login, logout, isLoading, error, changePassword }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

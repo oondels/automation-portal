@@ -21,8 +21,18 @@ class AuthService {
     localStorage.setItem(this.storageKey, JSON.stringify(decodedUser));
 
     return decodedUser;
+  };
+
+  async resetPassword(codigoBarras: string, newPassword: string, repeatPassword: string) {
+    const response = await authApi.post("/auth/recuperar", {
+      barCode: codigoBarras,
+      newPass: newPassword,
+      repeatPassword: repeatPassword
+    },
+      { withCredentials: true });
+
+    return response.data;
   }
 }
-
 
 export const authService = new AuthService();
