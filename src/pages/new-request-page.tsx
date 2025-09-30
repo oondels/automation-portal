@@ -64,7 +64,7 @@ export function NewRequestPage() {
     description: "",
     selectedGains: [] as string[],
   });
-  
+
   const [customGain, setCustomGain] = useState("");
 
   const handleGainToggle = (gainId: string) => {
@@ -97,25 +97,12 @@ export function NewRequestPage() {
     e.preventDefault();
 
     if (!formData.sector) {
-      notification.warning(
-        "Aviso!",
-        "Por favor, selecione o setor solicitante.",
-        3000
-      );
+      notification.warning("Aviso!", "Por favor, selecione o setor solicitante.", 3000);
       return;
     }
 
-    if (
-      !formData.name ||
-      !formData.projectType ||
-      !formData.urgency ||
-      !formData.description
-    ) {
-      notification.warning(
-        "Aviso!",
-        "Todos os campos são necessários.",
-        3000
-      );
+    if (!formData.name || !formData.projectType || !formData.urgency || !formData.description) {
+      notification.warning("Aviso!", "Todos os campos são necessários.", 3000);
       return;
     }
 
@@ -141,14 +128,15 @@ export function NewRequestPage() {
 
       // navigate(`/projects/`);
       setTimeout(() => {
-        window.location.reload()
+        window.location.reload();
       }, 1500);
     } catch (error: unknown) {
       console.error("Erro ao solicitar Projeto: ", error);
-      
+
       notification.error(
         "Erro ao enviar solicitação de projeto",
-        (error as ApiError)?.response?.data?.message || "Sua solicitação não pôde ser processada. Tente novamente mais tarde.",
+        (error as ApiError)?.response?.data?.message ||
+          "Sua solicitação não pôde ser processada. Tente novamente mais tarde.",
         5000
       );
     } finally {
@@ -217,14 +205,14 @@ export function NewRequestPage() {
                   value={formData.projectSector}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, projectSector: value }))}
                 >
-                    <SelectTrigger className="w-full rounded-lg border-muted-foreground/20 focus-visible:ring-primary">
+                  <SelectTrigger className="w-full rounded-lg border-muted-foreground/20 focus-visible:ring-primary">
                     <SelectValue placeholder="Selecione um Tipo de Projeto" />
-                    </SelectTrigger>
-                    <SelectContent>
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value="automation">Automação</SelectItem>
-                    <SelectItem value="carpentry" disabled>Marcenaria</SelectItem>
-                    <SelectItem value="metalwork" disabled>Serralheria</SelectItem>
-                    </SelectContent>
+                    <SelectItem value="carpentry">Marcenaria</SelectItem>
+                    <SelectItem value="metalwork">Serralheria</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
 
@@ -318,9 +306,9 @@ export function NewRequestPage() {
                   {urgencyLevels.map((level) => {
                     // Replace aggressive colors with more friendly variants
                     const colorMap = {
-                      low: "bg-emerald-50 text-black-100 hover:bg-emerald-100 border-emerald-100",
-                      medium: "bg-amber-50 text-black-100 hover:bg-amber-100 border-amber-100",
-                      high: "bg-rose-50 text-black-100 hover:bg-rose-100 border-rose-100",
+                      low: "bg-emerald-50 text-black-100 hover:bg-emerald-100 border-emerald-100 dark:text-gray-900",
+                      medium: "bg-amber-50 text-black-100 hover:bg-amber-100 border-amber-100 dark:text-gray-900",
+                      high: "bg-rose-50 text-black-100 hover:bg-rose-100 border-rose-100 dark:text-gray-900",
                     };
                     const color = colorMap[level.value as keyof typeof colorMap];
 
@@ -357,7 +345,7 @@ export function NewRequestPage() {
                   <Tags className="h-4 w-4 text-primary" />
                   Ganhos Esperados
                 </Label>
-                
+
                 {/* Botões para ganhos pré-definidos */}
                 <div className="flex flex-wrap gap-2">
                   {expectedGains.map((gain) => (
@@ -411,16 +399,14 @@ export function NewRequestPage() {
                 {/* Lista de ganhos selecionados (incluindo personalizados) */}
                 {formData.selectedGains.length > 0 && (
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-muted-foreground">
-                      Ganhos selecionados:
-                    </Label>
+                    <Label className="text-sm font-medium text-muted-foreground">Ganhos selecionados:</Label>
                     <div className="flex flex-wrap gap-2">
                       {formData.selectedGains.map((gain) => {
-                        const isPreDefined = expectedGains.some(g => g.id === gain);
-                        const displayLabel = isPreDefined 
-                          ? expectedGains.find(g => g.id === gain)?.label || gain
+                        const isPreDefined = expectedGains.some((g) => g.id === gain);
+                        const displayLabel = isPreDefined
+                          ? expectedGains.find((g) => g.id === gain)?.label || gain
                           : gain;
-                        
+
                         return (
                           <div
                             key={gain}
