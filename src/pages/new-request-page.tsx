@@ -210,8 +210,8 @@ export function NewRequestPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="automation">Automação</SelectItem>
-                    <SelectItem value="carpentry">Marcenaria</SelectItem>
-                    <SelectItem value="metalwork">Serralheria</SelectItem>
+                    <SelectItem disabled value="carpentry">Marcenaria</SelectItem>
+                    <SelectItem disabled value="metalwork">Serralheria</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
