@@ -4,6 +4,10 @@ import { CreateProjectDTO } from "../types/project";
 import { AppError } from "../utils/AppError";
 import { User } from "models/User";
 import { ListProjectsQuery } from "../dtos/list-projects.dto";
+import { permissionMap } from "../middlewares/checkPermission.middleware"
+
+const userRolesMap = ['admin', 'automation', 'user'] as const;
+type UserRole = typeof userRolesMap[number];
 
 export class ProjectController {
   private projectService: ProjectService;
@@ -20,10 +24,35 @@ export class ProjectController {
     }
   }
 
+  checkUserRole(user: User | undefined): UserRole | undefined {
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404)
+    }
+
+    const adminAccess = permissionMap['approveProject'];
+
+    const userSector = user.setor?.toLowerCase()
+    const userRole = user.funcao?.toLowerCase()
+
+    if (!userSector || !userRole) {
+      throw new AppError("Setor ou função do usuário não encontrados", 404)
+    }
+
+    if (userRole === 'gerente' && adminAccess.allowedRoles.includes(userRole)) {
+      return 'admin';
+    }
+
+    if (userSector === 'automacao') {
+      return 'automation';
+    }
+
+    return 'user';
+  }
+
   async listProjects(req: Request, res: Response, next: NextFunction) {
     try {
       // Validar os query params usando o schema Joi
-      const { error, value } = await import("../dtos/list-projects.dto").then(module => 
+      const { error, value } = await import("../dtos/list-projects.dto").then(module =>
         module.listProjectsQuerySchema.validate(req.query, { allowUnknown: true })
       );
 
@@ -38,8 +67,15 @@ export class ProjectController {
         return;
       }
 
+      const user = req.user as User | undefined;
+      const role = this.checkUserRole(user);
+      if (!role) {
+        res.status(403).json({ message: "Acesso negado. Função do usuário não definida. Procure o setor de automação." });
+        return;
+      }
+
       const queryParams: ListProjectsQuery = value;
-      const result = await this.projectService.listProjects(queryParams);
+      const result = await this.projectService.listProjects(queryParams, role, user as User);
 
       res.status(200).json(result);
       return;
@@ -145,7 +181,7 @@ export class ProjectController {
       next(error)
     }
   }
-  
+
   // TODO: Fix project pause time
   async resumeProject(req: Request, res: Response, next: NextFunction) {
     try {
