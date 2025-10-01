@@ -34,19 +34,13 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
     },
   };
 
-  const handleLoginOut = (action: string) => {
+  const handleLoginOut = async (action: string) => {
     if (action === "entrar") {
       return;
     }
 
     if (user) {
-      localStorage.removeItem("user");
-      sessionStorage.clear();
-      document.cookie.split(";").forEach(function (c) {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
-
-      window.location.href = "/";
+      logout();
     }
   };
 

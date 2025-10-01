@@ -23,6 +23,13 @@ class AuthService {
     return decodedUser;
   };
 
+  async logout() {
+    await authApi.post("/auth/logout", {}, { withCredentials: true });
+    localStorage.removeItem(this.storageKey);
+    localStorage.removeItem("tokenExpiration");
+    sessionStorage.clear();
+  }
+
   async resetPassword(codigoBarras: string, newPassword: string, repeatPassword: string) {
     const response = await authApi.post("/auth/recuperar", {
       barCode: codigoBarras,

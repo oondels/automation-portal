@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { User } from "../types";
 import { authService } from "../services/AuthService";
 import notification from "../components/Notification";
+import { useNavigate } from "react-router-dom";  
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +20,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const tokenExpiration = localStorage.getItem("tokenExpiration");
@@ -52,10 +55,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await authService.logout();
     setUser(null);
-    localStorage.removeItem("user");
     toast.success("Logout realizado com sucesso!");
+    
+    setTimeout(() => {
+      navigate("/");
+    }, 1500);
   };
 
   const changePassword = async (codigoBarras: string, newPassword: string, repeatPassword: string): Promise<void> => {
