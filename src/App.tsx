@@ -19,7 +19,7 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Check if user is logged in (simplified for demo)
-  const isAuthenticated = localStorage.getItem('user') !== null;
+  const isAuthenticated = localStorage.getItem("user") !== null;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -31,61 +31,69 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 function App() {
   return (
     <ThemeProvider defaultTheme="light">
-      <AuthProvider>
-        <ProjectsProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
+      <Router>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
 
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <DashboardPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/new-request"
-                element={
-                  <ProtectedRoute>
+            <Route
+              path="/new-request"
+              element={
+                <ProtectedRoute>
+                  <ProjectsProvider>
                     <MainLayout>
                       <NewRequestPage />
                     </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
+                  </ProjectsProvider>
+                </ProtectedRoute>
+              }
+            />
 
-              <Route
-                path="/projects"
-                element={
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <ProjectsProvider>
+                    <MainLayout>
+                      <DashboardPage />
+                    </MainLayout>
+                  </ProjectsProvider>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/projects"
+              element={
+                <ProtectedRoute>
+                  <ProjectsProvider>
                     <MainLayout>
                       <ProjectsPage />
                     </MainLayout>
-                }
-              />
+                  </ProjectsProvider>
+                </ProtectedRoute>
+              }
+            />
 
-              <Route
-                path="/project/:id"
-                element={
-                  <ProtectedRoute>
+            <Route
+              path="/project/:id"
+              element={
+                <ProtectedRoute>
+                  <ProjectsProvider>
                     <MainLayout>
                       <ProjectDetailsPage />
                     </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
+                  </ProjectsProvider>
+                </ProtectedRoute>
+              }
+            />
 
-              <Route path="*" element={<Navigate to="/\" replace />} />
-            </Routes>
-            <NotificationContainer/>
-          </Router>
-        </ProjectsProvider>
-      </AuthProvider>
+            <Route path="*" element={<Navigate to="/\" replace />} />
+          </Routes>
+          <NotificationContainer />
+        </AuthProvider>
+      </Router>
     </ThemeProvider>
   );
 }
