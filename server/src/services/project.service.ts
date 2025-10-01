@@ -2,7 +2,7 @@ import { AppDataSource } from "../config/data-source";
 import { User } from "../models/User";
 import { Project } from "../models/Project";
 import { Team } from "../models/Team";
-import { Repository } from "typeorm";
+import { FindOptionsWhere, In, Repository } from "typeorm";
 import { AppError } from "../utils/AppError";
 import { ProjectStatus, ProjectUrgency, PauseRecord, CreateProjectDTO } from "../types/project";
 import { ListProjectsQuery, PaginatedResponse } from "../dtos/list-projects.dto";
@@ -82,24 +82,32 @@ export class ProjectService {
     })
   }
 
-  async listProjects(queryParams: ListProjectsQuery): Promise<PaginatedResponse<Project>> {
+  async listProjects(queryParams: ListProjectsQuery, role: string, user: User): Promise<PaginatedResponse<Project>> {
     try {
       const { status, urgency, sector, page, limit, sort } = queryParams;
-      
+
       // Parse sort parameter
       const [sortField, sortDirection] = sort.split(':');
       const orderBy: Record<string, 'ASC' | 'DESC'> = {};
       orderBy[sortField] = sortDirection.toUpperCase() as 'ASC' | 'DESC';
 
-      // Build where clause dynamically
-      const where: Record<string, string> = {};
-      if (status) where.status = status;
-      if (urgency) where.urgency = urgency;
+      const where: FindOptionsWhere<Project> = {};
+      if (status) where.status = status as ProjectStatus;
+      if (urgency) where.urgency = urgency as ProjectUrgency;
       if (sector) where.sector = sector;
+
+      // Admin can see all projects
+      if (role === 'automation') {
+        where.status = ProjectStatus.APPROVED || where.status === ProjectStatus.IN_PROGRESS || where.status === ProjectStatus.PAUSED;
+      } 
+      else if (role === 'user') {
+        // Users can see only their requested projects
+        where.status = In([ProjectStatus.REQUESTED, ProjectStatus.COMPLETED, ProjectStatus.IN_PROGRESS, ProjectStatus.PAUSED]);
+        where.requestedBy = { id: user.id };
+      }
 
       // Calculate pagination
       const skip = (page - 1) * limit;
-
       // Execute query with count
       const [projects, total] = await this.projectRepository.findAndCount({
         where,
@@ -314,7 +322,7 @@ export class ProjectService {
       }
 
       project.recordedPauses = project.recordedPauses ?? [];
-      
+
       // Find the last pause record and add the end timestamp
       if (project.recordedPauses.length > 0) {
         const lastPause = project.recordedPauses[project.recordedPauses.length - 1];
