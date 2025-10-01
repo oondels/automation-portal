@@ -74,7 +74,6 @@ export function ProjectDetailsPage() {
   useEffect(() => {
     if (id && !isLoading) {
       const foundProject = getProject(id);
-      console.log("Found project:", foundProject);
       setProject(foundProject);
       setEditedProject(foundProject || {});
     }
