@@ -61,7 +61,7 @@ export function attachInterceptors(api: AxiosInstance, apiAuth: AxiosInstance) {
 
         setTimeout(() => {
           localStorage.clear();
-          window.location.reload();
+          window.location.href = "/login";
         }, 3000);
       } else {
         console.error("Erro temporário no refresh de token:", refreshError);
