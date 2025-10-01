@@ -11,12 +11,12 @@ export const projectRoute = Router();
 const projectController = new ProjectController();
 
 // GET /projects - List projects with pagination and filters
-projectRoute.get("/", projectController.listProjects.bind(projectController));
+projectRoute.get("/", AuthMiddleware, projectController.listProjects.bind(projectController));
 
 // TODO: Criar DTO para verificação de dados
 projectRoute.post("/", AuthMiddleware, validateRequest(createProjectSchema), projectController.newProject.bind(projectController));
 
-projectRoute.patch("/:id/approval", AuthMiddleware, CheckPermission("approveProject", "analista"),
+projectRoute.patch("/:id/approval", AuthMiddleware, CheckPermission("approveProject"),
   validateRequest(projectValidationSchema), projectController.approveProject.bind(projectController));
 
 // TODO: Criar DTO para verificação de dados

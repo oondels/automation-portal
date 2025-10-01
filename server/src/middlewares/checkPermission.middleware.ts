@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 
 // TODO: Fazer configuração geral -> Marcenaria, Serralheria e Automação
 // TODO: Tranferir armazenamento de usuarios liberados para tabela propria
-type RolePermissionMap = {
+export type RolePermissionMap = {
   [action: string]: {
     allowedRoles: string[],
     allowedUsers?: string[],
@@ -10,9 +10,9 @@ type RolePermissionMap = {
   };
 };
 
-const permissionMap: RolePermissionMap = {
+export const permissionMap: RolePermissionMap = {
   approveProject: {
-    allowedRoles: ["GERENTE", "ANALISTA", "COORDENADOR"],
+    allowedRoles: ["GERENTE"],
     allowedUsers: ["SERGIO.GONCALVES", "EDUARDO.BISOL", "CAMILA.SILVA", "VANESSA.SANTOS"]
   },
   updateEstimatedTime: {
@@ -22,7 +22,7 @@ const permissionMap: RolePermissionMap = {
   attendProject: {
     allowedRoles: ["ANALISTA", "AUTOMACAO", "MECANICO", "TI", "MARCENEIRO", "SERRALHEIRO"],
     allowedSectors: ["AUTOMACAO", "TI", "MARCENARIA", "SERRALHERIA"]
-  },
+  }
 };
 
 // Verifica o ususario, funcao e permissões
