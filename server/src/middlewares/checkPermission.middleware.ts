@@ -13,7 +13,7 @@ export type RolePermissionMap = {
 export const permissionMap: RolePermissionMap = {
   approveProject: {
     allowedRoles: ["GERENTE"],
-    allowedUsers: ["SERGIO.GONCALVES", "EDUARDO.BISOL", "CAMILA.SILVA", "VANESSA.SANTOS"]
+    allowedUsers: ["SERGIO.GONCALVES", "EDUARDO.BISOL", "CAMILA.PIRES", "VANESSA.SANTOS"]
   },
   updateEstimatedTime: {
     allowedRoles: ["ANALISTA", "COORDENADOR", "TI", "MARCENEIRO", "SERRALHEIRO"],

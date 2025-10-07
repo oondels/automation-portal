@@ -102,7 +102,7 @@ export class ProjectService {
       } 
       else if (role === 'user') {
         // Users can see only their requested projects
-        where.status = In([ProjectStatus.REQUESTED, ProjectStatus.COMPLETED, ProjectStatus.IN_PROGRESS, ProjectStatus.PAUSED]);
+        where.status = In([ProjectStatus.APPROVED, ProjectStatus.REQUESTED, ProjectStatus.COMPLETED, ProjectStatus.IN_PROGRESS, ProjectStatus.PAUSED]);
         where.requestedBy = { id: user.id };
       }
 

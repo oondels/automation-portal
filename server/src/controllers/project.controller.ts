@@ -38,7 +38,7 @@ export class ProjectController {
       throw new AppError("Setor ou função do usuário não encontrados", 404)
     }
 
-    if (userRole === 'gerente' && adminAccess.allowedRoles.includes(userRole)) {
+    if (userRole === 'gerente' && adminAccess.allowedRoles.includes(userRole.toUpperCase())) {
       return 'admin';
     }
 
@@ -68,11 +68,15 @@ export class ProjectController {
       }
 
       const user = req.user as User | undefined;
+      
       const role = this.checkUserRole(user);
       if (!role) {
         res.status(403).json({ message: "Acesso negado. Função do usuário não definida. Procure o setor de automação." });
         return;
       }
+
+      console.log(role);
+      
 
       const queryParams: ListProjectsQuery = value;
       const result = await this.projectService.listProjects(queryParams, role, user as User);
