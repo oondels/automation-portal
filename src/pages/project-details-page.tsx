@@ -403,7 +403,7 @@ export function ProjectDetailsPage() {
                 </>
               )}
 
-              {project.status === "approved" && isZeroInterval(project.estimatedDurationTime as IntervalObject) && (
+              {project.status === "approved" && user?.setor.toUpperCase() === 'AUTOMACAO' && isZeroInterval(project.estimatedDurationTime as IntervalObject) && (
                 <div className="flex flex-col space-y-2 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex items-center space-x-2 text-green-800">
                     <CheckCircle className="h-4 w-4" />
@@ -420,7 +420,7 @@ export function ProjectDetailsPage() {
               )}
 
               {/* Projeto solicitado e tempo definido */}
-              {project.status === "approved" && (
+              {project.status === "approved" && user?.setor.toUpperCase() === 'AUTOMACAO' && (
                 <>
                   <Button
                     className="text-green-500 hover:bg-green-700 py-2 rounded transition-all duration-200 active:scale-95 active:bg-green-800"
@@ -437,7 +437,7 @@ export function ProjectDetailsPage() {
 
               {/* {JSON.stringify(project)} */}
 
-              {project.status === "in_progress" && (
+              {project.status === "in_progress" && user?.setor.toUpperCase() === 'AUTOMACAO' && (
                 <>
                   <Button
                     onClick={handlePauseProject}
@@ -562,7 +562,7 @@ export function ProjectDetailsPage() {
             </div>
 
             {/* TODO: Continuar implementação de atualização do tempo estimado de conclusão do projeto */}
-            {project.status === "approved" && isZeroInterval(project.estimatedDurationTime as IntervalObject) ? (
+            {project.status === "approved" && user?.setor.toUpperCase() === 'AUTOMACAO' && isZeroInterval(project.estimatedDurationTime as IntervalObject) ? (
               <div className="space-y-2 mt-2">
                 {/* <input
                   type="text"
