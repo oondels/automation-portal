@@ -43,7 +43,14 @@ const envSchema = Joi.object({
 
   JWT_SECRET: Joi.string()
     .required()
-    .description("Auth Secret Key")
+    .description("Auth Secret Key"),
+
+  NOTIFICATION_API: Joi.string()
+    .required()
+    .description("Notification api"),
+  NOTIFICATION_API_KEY: Joi.string()
+    .required()
+    .description("Notification API key")
 })
   .unknown()         // allow extra env vars
   .required();
@@ -70,4 +77,6 @@ export const config = {
     password: envVars.DATABASE_PASSWORD as string,
     name: envVars.DATABASE_NAME as string,
   },
+  notification_api: envVars.NOTIFICATION_API,
+  notification_api_key: envVars.NOTIFICATION_API_KEY
 };

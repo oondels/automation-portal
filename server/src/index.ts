@@ -11,7 +11,6 @@ import { AppDataSource } from './config/data-source';
 
 AppDataSource.initialize()
   .then(() => {
-
     (async () => {
       const app = express();
       const PORT = config.port;
