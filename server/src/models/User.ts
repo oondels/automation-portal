@@ -13,7 +13,7 @@ import { Project } from './Project';
 
 @Entity({ name: 'usuarios', schema: 'autenticacao' })
 export class User {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id!: string;
 
   @CreateDateColumn({ name: 'createdat', type: 'timestamptz', nullable: true })

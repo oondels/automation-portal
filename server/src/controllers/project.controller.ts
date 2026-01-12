@@ -75,9 +75,6 @@ export class ProjectController {
         return;
       }
 
-      console.log(role);
-      
-
       const queryParams: ListProjectsQuery = value;
       const result = await this.projectService.listProjects(queryParams, role, user as User);
 

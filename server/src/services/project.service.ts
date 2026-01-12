@@ -130,16 +130,17 @@ export class ProjectService {
       };
     } catch (error) {
       console.error("Error listing projects:", error);
-      throw new AppError("Error listing projects", 500);
+      throw new AppError("Erro ao listar projetos.", 500);
     }
   }
 
   // TODO: Create a integration with IA to auto gen tags for the project
+  // TODO: Notificar email
   async createProject(projectData: CreateProjectDTO): Promise<Project> {
     try {
       const user = await this.userRepository.findOne({ where: { matricula: projectData.requestedBy } });
       if (!user) {
-        throw new AppError("User not found", 404);
+        throw new AppError("Usuário não encontrado.", 404);
       }
 
       const project = this.projectRepository.create({ ...projectData, requestedBy: user });
