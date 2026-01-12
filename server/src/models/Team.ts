@@ -23,7 +23,7 @@ export class Team {
   name!: string;
 
   @Column({ type: 'bigint' })
-  registration!: number;
+  registration!: string;
 
   @Column({ type: 'bigint' })
   rfid!: number;

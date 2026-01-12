@@ -34,7 +34,7 @@ export interface CreateProjectDTO {
   expectedGains?: string[];
   projectTags?: string[];
   pictures?: string[];
-  requestedBy: number;
+  requestedBy: string;
   approvedBy?: string;
   approvedAt?: Date;
   pausedAt?: Date;

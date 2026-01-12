@@ -2,9 +2,10 @@ import { ProjectService } from "../services/project.service";
 import { Request, Response, NextFunction } from "express";
 import { CreateProjectDTO } from "../types/project";
 import { AppError } from "../utils/AppError";
-import { User } from "models/User";
+import { User as UserEntity } from "../models/User";
 import { ListProjectsQuery } from "../dtos/list-projects.dto";
 import { permissionMap } from "../middlewares/checkPermission.middleware"
+import { TokenPayload } from "../types/auth";
 
 const userRolesMap = ['admin', 'automation', 'user'] as const;
 type UserRole = typeof userRolesMap[number];
@@ -24,7 +25,7 @@ export class ProjectController {
     }
   }
 
-  checkUserRole(user: User | undefined): UserRole | undefined {
+  checkUserRole(user: UserEntity): UserRole | undefined {
     if (!user) {
       throw new AppError("Usuário não encontrado", 404)
     }
@@ -67,7 +68,7 @@ export class ProjectController {
         return;
       }
 
-      const user = req.user as User | undefined;
+      const user = req.user as unknown as UserEntity;
 
       const role = this.checkUserRole(user);
       if (!role) {
@@ -76,7 +77,7 @@ export class ProjectController {
       }
 
       const queryParams: ListProjectsQuery = value;
-      const result = await this.projectService.listProjects(queryParams, role, user as User);
+      const result = await this.projectService.listProjects(queryParams, role, user as UserEntity);
 
       res.status(200).json(result);
       return;
@@ -154,7 +155,7 @@ export class ProjectController {
   async attendProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { id, service } = req.params
-      const registration = req.user?.matricula as number
+      const registration = req.user?.matricula as string
 
       this.checkService(service)
       const project = await this.projectService.attend(id, registration, service)
@@ -175,7 +176,7 @@ export class ProjectController {
   async pauseProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { id, service } = req.params
-      const user = req.user as User
+      const user = req.user as unknown as UserEntity
       const { reason } = req.body
 
       this.checkService(service)
@@ -192,7 +193,7 @@ export class ProjectController {
   async resumeProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { id, service } = req.params
-      const user = req.user as User
+      const user = req.user as unknown as UserEntity
 
       this.checkService(service)
       const project = await this.projectService.resume(id, user, service)
@@ -213,7 +214,7 @@ export class ProjectController {
   async completeProject(req: Request, res: Response, next: NextFunction) {
     try {
       const { id, service } = req.params
-      const user = req.user as User
+      const user = req.user as unknown as UserEntity
 
       this.checkService(service)
       const project = await this.projectService.complete(id, user, service)

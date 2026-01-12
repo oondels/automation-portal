@@ -1,6 +1,6 @@
 export interface TokenPayload {
   id: string;
-  matricula: number;
+  matricula: string;
   funcao: string;
   usuario?: string;
   setor?: string;

@@ -44,7 +44,7 @@ export class ProjectService {
 
   private async appendTimeline(options: {
     project: Project,
-    userRegistration: number,
+    userRegistration: string,
     eventType: string,
     description: string,
     oldStatus: string | null,
@@ -202,7 +202,7 @@ export class ProjectService {
     }
   }
 
-  async updateEstimatedTime(projectId: string, estimatedTime: string, userRegistration?: number): Promise<void> {
+  async updateEstimatedTime(projectId: string, estimatedTime: string, userRegistration?: string): Promise<void> {
     try {
       const project = await this.getProject(projectId)
 
@@ -229,7 +229,7 @@ export class ProjectService {
     }
   }
 
-  async attend(projectId: string, userRegistration: number, service: string): Promise<Project> {
+  async attend(projectId: string, userRegistration: string, service: string): Promise<Project> {
     try {
       const project = await this.getProject(projectId)
 
@@ -297,7 +297,7 @@ export class ProjectService {
       await this.projectRepository.save(project)
       await this.appendTimeline({
         project,
-        userRegistration: Number(user.matricula),
+        userRegistration: user.matricula,
         eventType: 'pausado',
         description: `Projeto pausado por ${user.usuario} - motivo: ${reason}`,
         oldStatus,
@@ -340,7 +340,7 @@ export class ProjectService {
 
       await this.appendTimeline({
         project,
-        userRegistration: Number(user.matricula),
+        userRegistration: user.matricula,
         eventType: 'retomado',
         description: `Projeto retomado por ${user.usuario}`,
         oldStatus,
@@ -376,7 +376,7 @@ export class ProjectService {
 
       await this.appendTimeline({
         project,
-        userRegistration: Number(user.matricula),
+        userRegistration: user.matricula,
         eventType: 'concluido',
         description: `Projeto concluído por ${user.usuario}`,
         oldStatus,
