@@ -6,6 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development nodemon --watch './**/*.ts' --exec ts-node ./src/index.ts",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:generate": "npm run typeorm migration:generate -- -d ./src/config/data-source.ts",
+    "migration:run": "npm run typeorm migration:run -- -d ./src/config/data-source.ts",
+    "migration:revert": "npm run typeorm migration:revert -- -d ./src/config/data-source.ts",
     "build": "tsc"
   },
   "keywords": [],
