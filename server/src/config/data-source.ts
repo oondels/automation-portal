@@ -6,6 +6,7 @@ import { Team } from "../models/Team"
 import { Project } from "../models/Project"
 import { ProjectTimeline } from "../models/ProjectTimeline"
 import { NotificationEmail } from '../models/NotificationEmail'
+import { Approver } from '../models/Approvers'
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -16,7 +17,7 @@ export const AppDataSource = new DataSource({
   database: config.database.name,
   synchronize: false, // Keep just in development mode
   logging: false,
-  entities: [Project, Team, User, ProjectTimeline, NotificationEmail],
+  entities: [Project, Team, User, ProjectTimeline, NotificationEmail, Approver],
   subscribers: [],
   migrations: [],
 })
