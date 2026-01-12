@@ -13,8 +13,9 @@ const projectController = new ProjectController();
 // GET /projects - List projects with pagination and filters
 projectRoute.get("/", AuthMiddleware, projectController.listProjects.bind(projectController));
 
-// TODO: Criar DTO para verificação de dados
 projectRoute.post("/", AuthMiddleware, validateRequest(createProjectSchema), projectController.newProject.bind(projectController));
+
+projectRoute.get("/test/approve", AuthMiddleware, CheckPermission("approveProject"), projectController.testRolePermission.bind(projectController))
 
 projectRoute.patch("/:id/approval", AuthMiddleware, CheckPermission("approveProject"),
   validateRequest(projectValidationSchema), projectController.approveProject.bind(projectController));

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { ApproverService } from "../services/approvers.service";
 
 // TODO: Fazer configuração geral -> Marcenaria, Serralheria e Automação
 // TODO: Tranferir armazenamento de usuarios liberados para tabela propria
@@ -10,10 +11,12 @@ export type RolePermissionMap = {
   };
 };
 
+const approverService = new ApproverService()
+// TODO: Fazer gerenciamento das outras permissoes com mapeamento e armazenamento em banco de dados, retirar o hardcode atual
 export const permissionMap: RolePermissionMap = {
   approveProject: {
     allowedRoles: ["GERENTE"],
-    allowedUsers: ["SERGIO.GONCALVES", "EDUARDO.BISOL", "CAMILA.PIRES", "VANESSA.SANTOS"]
+    allowedUsers: []
   },
   updateEstimatedTime: {
     allowedRoles: ["ANALISTA", "COORDENADOR", "TI", "MARCENEIRO", "SERRALHEIRO"],
@@ -29,7 +32,16 @@ export const permissionMap: RolePermissionMap = {
 // Se o usuario não tiver permissão, retorna 403
 // Se o usuario tiver permissão, chama o next
 export const CheckPermission = (action: keyof typeof permissionMap, role: string = "") => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!permissionMap || !permissionMap?.approveProject?.allowedUsers || permissionMap?.approveProject?.allowedUsers.length <= 0) {
+      console.log("Buscando aprovadores");
+      const approvers = await approverService.getApprovers()
+
+      approvers?.forEach(approver => {
+        permissionMap.approveProject.allowedUsers?.push(approver.usuario)
+      })
+    }
+
     const user = req.user;
     const permission = permissionMap[action];
 

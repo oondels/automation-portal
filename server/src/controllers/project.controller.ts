@@ -68,7 +68,7 @@ export class ProjectController {
       }
 
       const user = req.user as User | undefined;
-      
+
       const role = this.checkUserRole(user);
       if (!role) {
         res.status(403).json({ message: "Acesso negado. Função do usuário não definida. Procure o setor de automação." });
@@ -83,6 +83,11 @@ export class ProjectController {
     } catch (error) {
       next(error);
     }
+  }
+
+  testRolePermission(req: Request, res: Response, next: NextFunction) {
+    res.status(200).json({ message: "Test successs" })
+    return
   }
 
   // TODO: Add notification system to notify users when a project is created
