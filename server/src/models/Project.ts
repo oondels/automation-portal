@@ -46,7 +46,7 @@ export class Project {
   })
   startDate?: Date;
 
-  @Column({ name: 'estimated_duration_time', type: 'interval', default: () => "'0 days'" })
+  @Column({ name: 'estimated_duration_time', type: 'interval', default: '00:00:00' })
   estimatedDurationTime?: string;
 
   @Column({
@@ -83,8 +83,8 @@ export class Project {
   })
   pictures?: string[];
 
-  @ManyToOne(() => User, user => user.requestedProjects, { nullable: false })
-  @JoinColumn({ name: 'requested_by' })
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'requested_by', referencedColumnName: "matricula" })
   requestedBy!: User;
 
   @Column({ name: 'approved_by', type: 'varchar', nullable: true })

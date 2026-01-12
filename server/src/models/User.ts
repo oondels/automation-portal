@@ -8,12 +8,14 @@ import {
   UpdateDateColumn,
   OneToMany,
   OneToOne,
+  Index
 } from 'typeorm';
 import { Team } from './Team';
 import { Project } from './Project';
 import { Approver } from './Approvers';
 import { NotificationEmail } from './NotificationEmail';
 
+@Index("matricula_unique", ["matricula"], { unique: true })
 @Entity({ name: 'usuarios', schema: 'autenticacao' })
 export class User {
   @PrimaryGeneratedColumn('increment', { type: 'bigint' })
@@ -28,7 +30,7 @@ export class User {
   @PrimaryColumn({ name: 'codigo_barras', type: 'bigint' })
   codigoBarras!: string;
 
-  @PrimaryColumn({ type: 'bigint', unique: true })
+  @PrimaryColumn({ type: 'bigint' })
   matricula!: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -46,19 +48,19 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   setor!: string;
 
-  @Column({ name: 'teste_calce', type: 'integer', default: () => '0', nullable: true })
+  @Column({ name: 'teste_calce', type: 'integer', default: 0, nullable: true })
   testeCalce!: number;
 
-  @Column({ name: 'pense_aja', type: 'integer', default: () => '0', nullable: true })
+  @Column({ name: 'pense_aja', type: 'integer', default: 0, nullable: true })
   penseAja!: number;
 
-  @Column({ type: 'integer', default: () => '0', nullable: true })
+  @Column({ type: 'integer', default: 0, nullable: true })
   season!: number;
 
-  @Column({ type: 'integer', default: () => '0', nullable: true })
+  @Column({ type: 'integer', default: 0, nullable: true })
   ambulatorio!: number;
 
-  @Column({ type: 'integer', default: () => '0', nullable: true })
+  @Column({ type: 'integer', default: 0, nullable: true })
   limpeza!: number;
 
   @Column({ type: 'integer', nullable: true })
