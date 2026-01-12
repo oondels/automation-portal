@@ -12,6 +12,7 @@ import {
 import { Team } from './Team';
 import { Project } from './Project';
 import { Approver } from './Approvers';
+import { NotificationEmail } from './NotificationEmail';
 
 @Entity({ name: 'usuarios', schema: 'autenticacao' })
 export class User {
@@ -28,7 +29,7 @@ export class User {
   codigoBarras!: string;
 
   @PrimaryColumn({ type: 'bigint', unique: true })
-  matricula!: number;
+  matricula!: string;
 
   @Column({ type: 'varchar', nullable: true })
   nome!: string;
@@ -75,16 +76,17 @@ export class User {
   @Column({ type: 'bigint', nullable: true })
   rfid!: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  email!: string;
-
   @OneToMany(() => Team, team => team.registrationUser)
   teams!: Team[];
 
   @OneToMany(() => Project, project => project.requestedBy)
   requestedProjects!: Project[];
 
+  // Relação com aprovador  
   @OneToOne(() => Approver, approver => approver.user)
   approver!: Approver;
 
+  // Relação com Emails
+  @OneToOne(() => NotificationEmail, email => email.userEmail)
+  email!: NotificationEmail;
 }
