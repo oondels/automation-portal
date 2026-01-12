@@ -2,14 +2,16 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  Index,
+  OneToOne,
 } from 'typeorm';
 import { Team } from './Team';
 import { Project } from './Project';
+import { Approver } from './Approvers';
 
 @Entity({ name: 'usuarios', schema: 'autenticacao' })
 export class User {
@@ -22,10 +24,10 @@ export class User {
   @UpdateDateColumn({ name: 'updatedat', type: 'timestamptz', nullable: true })
   updatedAt!: Date;
 
-  @Column({ name: 'codigo_barras', type: 'bigint' })
+  @PrimaryColumn({ name: 'codigo_barras', type: 'bigint' })
   codigoBarras!: string;
 
-  @Column({ type: 'bigint', unique: true })
+  @PrimaryColumn({ type: 'bigint', unique: true })
   matricula!: number;
 
   @Column({ type: 'varchar', nullable: true })
@@ -81,4 +83,8 @@ export class User {
 
   @OneToMany(() => Project, project => project.requestedBy)
   requestedProjects!: Project[];
+
+  @OneToOne(() => Approver, approver => approver.user)
+  approver!: Approver;
+
 }

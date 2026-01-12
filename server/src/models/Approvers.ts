@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index, JoinColumn, OneToOne } from 'typeorm';
+import { User } from './User';
 
 @Entity({ schema: 'automacao', name: 'approvers' })
 export class Approver {
@@ -7,6 +8,13 @@ export class Approver {
 
   @Column({ type: 'bigint', unique: true })
   matricula!: string;
+
+  @OneToOne(() => User, user => user.approver)
+  @JoinColumn({
+    name: 'matricula',
+    referencedColumnName: 'matricula'
+  })
+  user!: User;
 
   @Column({ type: 'varchar' })
   usuario!: string;
