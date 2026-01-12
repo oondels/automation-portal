@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
   database: config.database.name,
   synchronize: false, // Keep just in development mode
   logging: false,
-  entities: [Project, Team, User, ProjectTimeline, NotificationEmail, Approver],
+  entities: ["src/models/*.ts"],
+  migrations: ["src/migrations/*.ts"],
   subscribers: [],
-  migrations: [],
 })
