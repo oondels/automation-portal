@@ -8,14 +8,15 @@ import {
   UpdateDateColumn,
   OneToMany,
   OneToOne,
-  Index
+  Index,
+  Unique
 } from 'typeorm';
 import { Team } from './Team';
 import { Project } from './Project';
 import { Approver } from './Approvers';
 import { NotificationEmail } from './NotificationEmail';
 
-@Index("matricula_unique", ["matricula"], { unique: true })
+@Unique('matricula_unique', ['matricula'])
 @Entity({ name: 'usuarios', schema: 'autenticacao' })
 export class User {
   @PrimaryGeneratedColumn('increment', { type: 'bigint' })
