@@ -96,9 +96,8 @@ export class ProjectService {
       if (urgency) where.urgency = urgency as ProjectUrgency;
       if (sector) where.sector = sector;
 
-      // Admin can see all projects
       if (role === 'automation') {
-        where.status = ProjectStatus.APPROVED || where.status === ProjectStatus.IN_PROGRESS || where.status === ProjectStatus.PAUSED;
+        where.status = In([ProjectStatus.APPROVED, ProjectStatus.IN_PROGRESS, ProjectStatus.PAUSED]);
       } 
       else if (role === 'user') {
         // Users can see only their requested projects

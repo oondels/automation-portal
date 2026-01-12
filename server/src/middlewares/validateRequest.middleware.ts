@@ -33,7 +33,6 @@ export const validateRequest = (schema: ObjectSchema, property: "body" | "query"
       return
     }
     // Replace with sanitized/validated value
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (req as any)[property] = value
     next()
   }
