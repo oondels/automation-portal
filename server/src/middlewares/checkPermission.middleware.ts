@@ -38,7 +38,6 @@ export const permissionMap: RolePermissionMap = {
 export const CheckPermission = (action: keyof typeof permissionMap, role: string = "") => {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!permissionMap || !permissionMap?.approveProject?.allowedUsers || permissionMap?.approveProject?.allowedUsers.length <= 0) {
-      console.log("Buscando aprovadores");
       const approvers = await approverService.getApprovers()
 
       approvers?.forEach(approver => {
