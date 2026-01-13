@@ -4,6 +4,7 @@ import cors from "cors"
 import http from "http"
 import cookieParser from "cookie-parser"
 import { projectRoute } from "./routes/project.route"
+import { approverRoute } from "./routes/approver.route"
 import { WsManager, setWsManagerInstance } from './websockets/manager';
 import { config } from "./config/env"
 import { AppError } from './utils/AppError';
@@ -19,6 +20,7 @@ AppDataSource.initialize()
       app.use(cors({ origin: ["http://localhost:5173", "http://10.100.1.43", "http://10.100.1.43:5173", "http://10.100.1.43:3046", "http://localhost:3046"], credentials: true }))
       app.use(express.json())
       app.use("/api/projects/", projectRoute)
+      app.use("/api/approvers/", approverRoute)
       // Error Handler
       app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
         console.error(`Error on method ${req.method} - ${req.originalUrl}:`, error);

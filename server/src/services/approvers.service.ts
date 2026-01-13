@@ -21,8 +21,19 @@ export class ApproverService {
 
   async create(payload: Omit<ApproversData, "id">) {
     try {
+      // Verificar se já existe um aprovador com esta matrícula
+      const existingApprover = await this.approverRepository.findOne({
+        where: { matricula: payload.matricula }
+      });
+
+      if (existingApprover) {
+        throw new AppError("Já existe um aprovador com esta matrícula", 409);
+      }
+
       const newApprover = this.approverRepository.create(payload)
       await this.approverRepository.save(newApprover)
+      
+      return newApprover;
     } catch (error) {
       if (error instanceof AppError) {
         throw error
@@ -31,24 +42,95 @@ export class ApproverService {
     }
   }
 
-  async del() { }
-
-  async edit(projectId: string, active: boolean) {
+  async getApproverById(approverId: string): Promise<Approver | null> {
     try {
       const approver = await this.approverRepository.findOne({
-        where: {
-          id: projectId
+        where: { id: approverId },
+        relations: {
+          user: {
+            email: true
+          }
         }
-      })
+      });
+
       if (!approver) {
-        throw new AppError("Usuário aprovador não encontrado.", 404)
+        throw new AppError("Aprovador não encontrado", 404);
       }
 
+      return approver;
     } catch (error) {
       if (error instanceof AppError) {
-        throw error
+        throw error;
       }
-      throw new AppError("Erro ao editar novo aprovador", 500)
+      throw new AppError("Erro ao buscar aprovador", 500);
+    }
+  }
+
+  async updateApprover(approverId: string, payload: Partial<Omit<ApproversData, "id" | "matricula">>): Promise<Approver> {
+    try {
+      const approver = await this.approverRepository.findOne({
+        where: { id: approverId }
+      });
+
+      if (!approver) {
+        throw new AppError("Aprovador não encontrado", 404);
+      }
+
+      // Atualizar apenas os campos fornecidos
+      Object.assign(approver, payload);
+
+      await this.approverRepository.save(approver);
+      
+      return approver;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError("Erro ao editar aprovador", 500);
+    }
+  }
+
+  async deleteApprover(approverId: string): Promise<void> {
+    try {
+      const approver = await this.approverRepository.findOne({
+        where: { id: approverId }
+      });
+
+      if (!approver) {
+        throw new AppError("Aprovador não encontrado", 404);
+      }
+
+      // Soft delete - apenas desativar
+      approver.active = false;
+      await this.approverRepository.save(approver);
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError("Erro ao deletar aprovador", 500);
+    }
+  }
+
+  async toggleApproverStatus(approverId: string): Promise<Approver> {
+    try {
+      const approver = await this.approverRepository.findOne({
+        where: { id: approverId }
+      });
+
+      if (!approver) {
+        throw new AppError("Aprovador não encontrado", 404);
+      }
+
+      // Inverter status active
+      approver.active = !approver.active;
+      await this.approverRepository.save(approver);
+
+      return approver;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError("Erro ao alterar status do aprovador", 500);
     }
   }
 

@@ -25,6 +25,10 @@ export const permissionMap: RolePermissionMap = {
   attendProject: {
     allowedRoles: ["ANALISTA", "AUTOMACAO", "MECANICO", "TI", "MARCENEIRO", "SERRALHEIRO"],
     allowedSectors: ["AUTOMACAO", "TI", "MARCENARIA", "SERRALHERIA"]
+  },
+  manageApprovers: {
+    allowedRoles: ["ADMIN"],
+    allowedUsers: []
   }
 };
 
