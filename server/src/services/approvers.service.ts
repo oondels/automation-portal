@@ -144,6 +144,96 @@ export class ApproverService {
     }
   }
 
+  /**
+   * Busca emails de aprovadores ATIVOS e autorizados para notificações
+   * @param options - Opções de filtro (dassUnit, application)
+   * @returns Array de emails válidos
+   */
+  async getActiveApproversForNotification(options?: {
+    dassUnit?: string;
+    application?: string;
+  }): Promise<string[]> {
+    try {
+      const application = options?.application || "automation";
+
+      const approvers = await this.approverRepository.find({
+        where: {
+          active: true  // Filtrar apenas aprovadores ativos
+        },
+        relations: {
+          user: {
+            email: true
+          }
+        },
+        select: {
+          id: true,
+          matricula: true,
+          usuario: true,
+          role: true,
+          unidadeDass: true,
+          user: {
+            nome: true,
+            email: {
+              email: true,
+              confirmed: true,
+              authorizedNotificationsApps: true,
+              unidadeDass: true
+            }
+          }
+        },
+        order: {
+          usuario: 'ASC'
+        }
+      });
+
+      const emails: string[] = [];
+
+      for (const approver of approvers) {
+        const email = approver?.user?.email;
+
+        // Verificar se email está confirmado
+        if (!email?.confirmed) {
+          console.log(`Approver ${approver.usuario} - Email não confirmado`);
+          continue;
+        }
+
+        // Verificar autorização para o aplicativo
+        const authorizedApps = email.authorizedNotificationsApps || [];
+        if (!authorizedApps.includes(application)) {
+          console.log(`Approver ${approver.usuario} - Não autorizado para ${application}`);
+          continue;
+        }
+
+        // Filtrar por unidade DASS se especificado
+        if (options?.dassUnit && email.unidadeDass !== options.dassUnit) {
+          console.log(`Approver ${approver.usuario} - Unidade DASS diferente (${email.unidadeDass} !== ${options.dassUnit})`);
+          continue;
+        }
+
+        emails.push(email.email);
+      }
+
+      if (emails.length === 0) {
+        console.warn("Nenhum aprovador ativo e autorizado encontrado para notificação");
+      } else {
+        console.log(`${emails.length} aprovador(es) autorizado(s) para notificação:`, emails);
+      }
+
+      return emails;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+
+      console.error("Erro ao buscar emails de aprovadores ativos:", error);
+      throw new AppError("Erro ao buscar emails dos aprovadores.", 500);
+    }
+  }
+
+  /**
+   * @deprecated Use getActiveApproversForNotification() instead
+   * Busca emails de todos os aprovadores (sem filtro de active)
+   */
   async getApproversEmails(): Promise<string[]> {
     try {
       const approvers = await this.approverRepository.find({

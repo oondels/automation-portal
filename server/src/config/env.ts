@@ -50,7 +50,11 @@ const envSchema = Joi.object({
     .description("Notification api"),
   NOTIFICATION_API_KEY: Joi.string()
     .required()
-    .description("Notification API key")
+    .description("Notification API key"),
+  FRONTEND_URL: Joi.string()
+    .uri()
+    .default("http://localhost:5173")
+    .description("Frontend URL for links in notifications")
 })
   .unknown()         // allow extra env vars
   .required();
@@ -78,5 +82,6 @@ export const config = {
     name: envVars.DATABASE_NAME as string,
   },
   notification_api: envVars.NOTIFICATION_API,
-  notification_api_key: envVars.NOTIFICATION_API_KEY
+  notification_api_key: envVars.NOTIFICATION_API_KEY,
+  frontend_url: envVars.FRONTEND_URL || "http://localhost:5173"
 };
