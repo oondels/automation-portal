@@ -25,9 +25,11 @@ export const NotificationService = {
     try {
       const userEmail = await notificationRepository.findOne({
         where: {
-          matricula: registration,
+          userEmail: {
+            matricula: registration,
+          },
           unidadeDass: dassOffice
-        }
+        },
       })
 
       if (!userEmail) {
