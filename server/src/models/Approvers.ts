@@ -27,4 +27,7 @@ export class Approver {
 
   @Column({ type: 'varchar', length: 30, nullable: true })
   permission?: string | null;
+
+  @Column({ type: 'boolean', default: true })
+  active!: boolean
 }
