@@ -8,18 +8,24 @@ import { ProjectStatus, ProjectUrgency, PauseRecord, CreateProjectDTO } from "..
 import { ListProjectsQuery, PaginatedResponse } from "../dtos/list-projects.dto";
 import { ProjectTimeline } from "../models/ProjectTimeline";
 import { wsBroadcast } from "../websockets/manager";
+import { NotificationService } from "./notification.service";
+import { NotificationPayload } from "../types/notification";
+import { NotificationEmail } from "../models/NotificationEmail";
+import { ApproverService } from "./approvers.service";
 
 export class ProjectService {
   private projectRepository: Repository<Project>
   private userRepository: Repository<User>
   private teamRepository: Repository<Team>
   private timelineRepository: Repository<ProjectTimeline>
+  private approveService: ApproverService
 
   constructor() {
     this.projectRepository = AppDataSource.getRepository(Project)
     this.userRepository = AppDataSource.getRepository(User)
     this.teamRepository = AppDataSource.getRepository(Team)
     this.timelineRepository = AppDataSource.getRepository(ProjectTimeline)
+    this.approveService = new ApproverService()
   }
 
   private hasValidEstimatedDuration(estimated?: string): boolean {
@@ -98,7 +104,7 @@ export class ProjectService {
 
       if (role === 'automation') {
         where.status = In([ProjectStatus.APPROVED, ProjectStatus.IN_PROGRESS, ProjectStatus.PAUSED]);
-      } 
+      }
       else if (role === 'user') {
         // Users can see only their requested projects
         where.status = In([ProjectStatus.APPROVED, ProjectStatus.REQUESTED, ProjectStatus.COMPLETED, ProjectStatus.IN_PROGRESS, ProjectStatus.PAUSED]);
@@ -154,6 +160,19 @@ export class ProjectService {
         newStatus: project.status,
         payload: { projectName: project.projectName, sector: project.sector }
       })
+
+      const emails = await this.approveService.getApproversEmails()
+      if (emails.length > 0) {
+        const notificationPayload = {
+          to: [],
+          subject: "",
+          title: "",
+          message: "",
+          application: ""
+        } as NotificationPayload
+        await NotificationService.sendNotification(notificationPayload)
+      }
+
       return project;
     } catch (error) {
       if (error instanceof AppError) throw error;
