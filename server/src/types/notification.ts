@@ -1,5 +1,5 @@
 export interface NotificationPayload {
-  to: string;
+  to: string[] | string;
   subject: string;
   title: string;
   message: string;
