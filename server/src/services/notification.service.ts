@@ -46,5 +46,27 @@ export const NotificationService = {
       console.error("Error checking notification enabled:", errorMessage);
       throw error;
     }
+  },
+
+  async getUserEmail(registration: string, dassOffice: string) {
+    try {
+      const userEmail = await notificationRepository.findOne({
+        where:{
+          userEmail: {
+            matricula: registration,
+          },
+          unidadeDass: dassOffice
+        
+        }
+      })
+
+      return userEmail?.email;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error
+      }
+
+      throw new AppError("Erro ao buscar email do usuario", 500)
+    }
   }
 }

@@ -141,7 +141,6 @@ export class ProjectService {
   }
 
   // TODO: Create a integration with IA to auto gen tags for the project
-  // TODO: Notificar email
   async createProject(projectData: CreateProjectDTO): Promise<Project> {
     try {
       const user = await this.userRepository.findOne({ where: { matricula: projectData.requestedBy } });
@@ -180,7 +179,7 @@ export class ProjectService {
             subject: `Nova Solicitação: ${project.projectName}`,
             title: "Nova Solicitação de Automação",
             message: `${user.nome || user.usuario} solicitou o projeto "${project.projectName}" do setor ${project.sector} com urgência ${urgencyLabels[project.urgency] || project.urgency}.\n\nDescrição: ${project.description.substring(0, 200)}${project.description.length > 200 ? '...' : ''}`,
-            link: `${config.frontend_url}/projects/${project.id}`,
+            link: `${config.frontend_url}/project/${project.id}`,
             application: "automation"
           } as NotificationPayload;
 
@@ -203,7 +202,6 @@ export class ProjectService {
     }
   }
 
-  // TODO: Notify Automação after request status update
   async approveProject(projectId: string, username: string, newStatus: ProjectStatus, urgency: ProjectUrgency): Promise<Project> {
     const project = await this.getProject(projectId)
 
@@ -236,27 +234,67 @@ export class ProjectService {
       // Notificar solicitante sobre aprovação/rejeição
       try {
         const requester = project.requestedBy;
+        const statusText = newStatus === 'approved' ? 'aprovado' : 'rejeitado';
+        const urgencyLabels = { low: "Baixa", medium: "Média", high: "Alta" };
+
         if (requester) {
+          // Notificar SOLICITANTE
           const isEnabled = await NotificationService.isNotificationEnabled(
             requester.matricula,
-            requester.unidade || "UPA"
+            requester.unidade
           );
 
           if (isEnabled) {
-            const statusText = newStatus === 'approved' ? 'aprovado' : 'rejeitado';
-            const urgencyLabels = { low: "Baixa", medium: "Média", high: "Alta" };
+            const userEmail = await NotificationService.getUserEmail(
+              requester.matricula,
+              requester.unidade
+            );
+            
+            if (userEmail) {
+              const requesterPayload = {
+                to: [userEmail],
+                subject: `Projeto ${statusText}: ${project.projectName}`,
+                title: `Projeto ${statusText.toUpperCase()}`,
+                message: `Seu projeto "${project.projectName}" foi ${statusText} por ${username} com urgência ${urgencyLabels[urgency] || urgency}. Aguarde a equipe de automação iniciar o atendimento e definir o prazo de entrega.`,
+                link: `${config.frontend_url}/project/${project.id}`,
+                application: "automation"
+              } as NotificationPayload;
 
-            const notificationPayload = {
-              to: [requester.email?.email].filter(Boolean),
-              subject: `Projeto ${statusText}: ${project.projectName}`,
-              title: `Projeto ${statusText.toUpperCase()}`,
-              message: `Seu projeto "${project.projectName}" foi ${statusText} por ${username} com urgência ${urgencyLabels[urgency] || urgency}.`,
-              link: `${config.frontend_url}/projects/${project.id}`,
+              await NotificationService.sendNotification(requesterPayload);
+              console.log(`Notificação de ${statusText} enviada para ${requester.usuario}`);
+            }
+          }
+        }
+
+        // Notificar EQUIPE DE AUTOMAÇÃO (apenas se APROVADO)
+        if (newStatus === ProjectStatus.APPROVED) {
+          const teamMembers = await this.teamRepository.find({
+            relations: { registrationUser: { email: true } }
+          });
+
+          const teamEmails: string[] = [];
+          for (const member of teamMembers) {
+            const email = member.registrationUser?.email;
+            // Verificar se email confirmado e autorizado para automation
+            if (email?.confirmed && email.authorizedNotificationsApps?.includes("automation")) {
+              teamEmails.push(email.email);
+            }
+          }
+
+          if (teamEmails.length > 0) {
+            const teamPayload = {
+              to: teamEmails,
+              subject: `Novo Projeto Aprovado: ${project.projectName}`,
+              title: "Novo Projeto Disponível para Atendimento",
+              message: `O projeto "${project.projectName}" foi aprovado com urgência ${urgencyLabels[urgency] || urgency}.\n\nSolicitante: ${requester?.nome || requester?.usuario}\nSetor: ${project.sector}\n\nAcesse o sistema para atendê-lo.`,
+              link: `${config.frontend_url}/project/${project.id}`,
               application: "automation"
             } as NotificationPayload;
 
-            await NotificationService.sendNotification(notificationPayload);
-            console.log(`Notificação de ${statusText} enviada para ${requester.usuario}`);
+            await NotificationService.sendNotification(teamPayload);
+            console.log(`Notificação de projeto aprovado enviada para ${teamEmails.length} membro(s) da equipe`);
+          } else {
+            console.warn("Nenhum membro da equipe disponível para notificação");
           }
         }
       } catch (notificationError) {
@@ -385,17 +423,24 @@ export class ProjectService {
           );
 
           if (isEnabled) {
-            const notificationPayload = {
-              to: [requester.email?.email].filter(Boolean),
-              subject: `Projeto Pausado: ${project.projectName}`,
-              title: "Projeto Pausado",
-              message: `Seu projeto "${project.projectName}" foi pausado por ${user.nome || user.usuario}.\n\nMotivo: ${reason}`,
-              link: `${config.frontend_url}/projects/${project.id}`,
-              application: "automation"
-            } as NotificationPayload;
+            const userEmail = await NotificationService.getUserEmail(
+              requester.matricula,
+              requester.unidade || "UPA"
+            );
 
-            await NotificationService.sendNotification(notificationPayload);
-            console.log(`Notificação de pausa enviada para ${requester.usuario}`);
+            if (userEmail) {
+              const notificationPayload = {
+                to: [userEmail],
+                subject: `Projeto Pausado: ${project.projectName}`,
+                title: "Projeto Pausado",
+                message: `Seu projeto "${project.projectName}" foi pausado por ${user.nome || user.usuario}.\n\nMotivo: ${reason}`,
+                link: `${config.frontend_url}/projects/${project.id}`,
+                application: "automation"
+              } as NotificationPayload;
+
+              await NotificationService.sendNotification(notificationPayload);
+              console.log(`Notificação de pausa enviada para ${requester.usuario}`);
+            }
           }
         }
       } catch (notificationError) {
@@ -444,32 +489,7 @@ export class ProjectService {
         newStatus: project.status,
         payload: { service }
       })
-      // Notificar solicitante que projeto foi iniciado
-      try {
-        const requester = project.requestedBy;
-        if (requester) {
-          const isEnabled = await NotificationService.isNotificationEnabled(
-            requester.matricula,
-            requester.unidade || "UPA"
-          );
 
-          if (isEnabled) {
-            const notificationPayload = {
-              to: [requester.email?.email].filter(Boolean),
-              subject: `Projeto em Atendimento: ${project.projectName}`,
-              title: "Projeto Iniciado",
-              message: `Seu projeto "${project.projectName}" foi iniciado por ${user.nome || user.usuario} e está em atendimento.`,
-              link: `${config.frontend_url}/projects/${project.id}`,
-              application: "automation"
-            } as NotificationPayload;
-
-            await NotificationService.sendNotification(notificationPayload);
-            console.log(`Notificação de início enviada para ${requester.usuario}`);
-          }
-        }
-      } catch (notificationError) {
-        console.error("Erro ao enviar notificação de início:", notificationError);
-      }
       // Notificar solicitante sobre retomada
       try {
         const requester = project.requestedBy;
@@ -480,17 +500,24 @@ export class ProjectService {
           );
 
           if (isEnabled) {
-            const notificationPayload = {
-              to: [requester.email?.email].filter(Boolean),
-              subject: `Projeto Retomado: ${project.projectName}`,
-              title: "Projeto Retomado",
-              message: `Seu projeto "${project.projectName}" foi retomado por ${user.nome || user.usuario} e está novamente em atendimento.`,
-              link: `${config.frontend_url}/projects/${project.id}`,
-              application: "automation"
-            } as NotificationPayload;
+            const userEmail = await NotificationService.getUserEmail(
+              requester.matricula,
+              requester.unidade || "UPA"
+            );
 
-            await NotificationService.sendNotification(notificationPayload);
-            console.log(`Notificação de retomada enviada para ${requester.usuario}`);
+            if (userEmail) {
+              const notificationPayload = {
+                to: [userEmail],
+                subject: `Projeto Retomado: ${project.projectName}`,
+                title: "Projeto Retomado",
+                message: `Seu projeto "${project.projectName}" foi retomado por ${user.nome || user.usuario} e está novamente em atendimento.`,
+                link: `${config.frontend_url}/projects/${project.id}`,
+                application: "automation"
+              } as NotificationPayload;
+
+              await NotificationService.sendNotification(notificationPayload);
+              console.log(`Notificação de retomada enviada para ${requester.usuario}`);
+            }
           }
         }
       } catch (notificationError) {
@@ -543,17 +570,24 @@ export class ProjectService {
           );
 
           if (isEnabled) {
-            const notificationPayload = {
-              to: [requester.email?.email].filter(Boolean),
-              subject: `Projeto Concluído: ${project.projectName}`,
-              title: "Projeto Concluído",
-              message: `Seu projeto "${project.projectName}" foi concluído por ${user.nome || user.usuario}. Obrigado por utilizar o sistema de automação!`,
-              link: `${config.frontend_url}/projects/${project.id}`,
-              application: "automation"
-            } as NotificationPayload;
+            const userEmail = await NotificationService.getUserEmail(
+              requester.matricula,
+              requester.unidade || "UPA"
+            );
 
-            await NotificationService.sendNotification(notificationPayload);
-            console.log(`Notificação de conclusão enviada para ${requester.usuario}`);
+            if (userEmail) {
+              const notificationPayload = {
+                to: [userEmail],
+                subject: `Projeto Concluído: ${project.projectName}`,
+                title: "Projeto Concluído",
+                message: `Seu projeto "${project.projectName}" foi concluído por ${user.nome || user.usuario}. Obrigado por utilizar o sistema de automação!`,
+                link: `${config.frontend_url}/projects/${project.id}`,
+                application: "automation"
+              } as NotificationPayload;
+
+              await NotificationService.sendNotification(notificationPayload);
+              console.log(`Notificação de conclusão enviada para ${requester.usuario}`);
+            }
           }
         }
       } catch (notificationError) {
