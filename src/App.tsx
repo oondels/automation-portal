@@ -13,6 +13,7 @@ import { ApproversPage } from "./pages/approvers-page";
 import { MainLayout } from "./components/layout/main-layout";
 import { NotificationContainer } from "./components/Notification";
 import { FloatingActionButton } from "./components/ui/floating-action-button";
+import { SettingsPage } from "./pages/settings-page";
 
 // Protected route component
 type ProtectedRouteProps = {
@@ -97,6 +98,17 @@ function App() {
                 <ProtectedRoute>
                   <MainLayout>
                     <ApproversPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <SettingsPage/>
                   </MainLayout>
                 </ProtectedRoute>
               }
