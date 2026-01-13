@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { FolderKanban, Layout, FileSpreadsheet, ListPlus, Settings, X, Menu, LogOut, LogIn } from "lucide-react";
+import { FolderKanban, Layout, FileSpreadsheet, ListPlus, Settings, X, Menu, LogOut, LogIn, UserCog } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "../theme-toggle";
@@ -65,6 +65,14 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
       path: "/new-request",
       onClick: () => isMobile && setIsOpen(false),
       disabled: false,
+    },
+    {
+      title: "Aprovadores",
+      icon: <UserCog size={20} />,
+      path: "/approvers",
+      onClick: () => isMobile && setIsOpen(false),
+      disabled: false,
+      adminOnly: true,
     },
     {
       title: "Relatórios",
@@ -139,27 +147,29 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
 
               <div className="mt-2 flex-1 overflow-y-auto">
                 <nav className="space-y-1 px-2">
-                  {menuItems.map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={item.disabled ? (e) => e.preventDefault() : item.onClick}
-                      className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                        location.pathname === item.path
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-primary/20 hover:text-accent-foreground",
-                        item.disabled && "cursor-not-allowed opacity-50"
-                      )}
-                    >
-                      {item.icon}
-                      {isOpen && (
-                        <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                          {item.title}
-                        </motion.span>
-                      )}
-                    </Link>
-                  ))}
+                  {menuItems
+                    .filter((item) => !item.adminOnly || user?.funcao?.toUpperCase() === "ADMIN")
+                    .map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={item.disabled ? (e) => e.preventDefault() : item.onClick}
+                        className={cn(
+                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                          location.pathname === item.path
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-primary/20 hover:text-accent-foreground",
+                          item.disabled && "cursor-not-allowed opacity-50"
+                        )}
+                      >
+                        {item.icon}
+                        {isOpen && (
+                          <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                            {item.title}
+                          </motion.span>
+                        )}
+                      </Link>
+                    ))}
                 </nav>
               </div>
 

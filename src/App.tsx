@@ -9,6 +9,7 @@ import { DashboardPage } from "./pages/dashboard-page";
 import { NewRequestPage } from "./pages/new-request-page";
 import { ProjectsPage } from "./pages/projects-page";
 import { ProjectDetailsPage } from "./pages/project-details-page";
+import { ApproversPage } from "./pages/approvers-page";
 import { MainLayout } from "./components/layout/main-layout";
 import { NotificationContainer } from "./components/Notification";
 import { FloatingActionButton } from "./components/ui/floating-action-button";
@@ -90,7 +91,18 @@ function App() {
               }
             />
 
-            <Route path="*" element={<Navigate to="/\" replace />} />
+            <Route
+              path="/approvers"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <ApproversPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <NotificationContainer />
           <FloatingActionButton />

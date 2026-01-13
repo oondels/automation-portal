@@ -113,3 +113,24 @@ export type IntervalObject = {
   minutes?: number
   seconds?: number
 }
+
+export type Approver = {
+  id: string;
+  matricula: string;
+  usuario: string;
+  unidadeDass: string;
+  role: string;
+  permission?: string | null;
+  active: boolean;
+  user?: {
+    nome: string;
+    email?: {
+      email: string;
+      confirmed: boolean;
+    };
+  };
+}
+
+export type CreateApproverPayload = Omit<Approver, "id" | "user">;
+
+export type UpdateApproverPayload = Partial<Omit<Approver, "id" | "matricula" | "user">>;
