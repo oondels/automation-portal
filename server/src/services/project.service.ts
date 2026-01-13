@@ -202,6 +202,7 @@ export class ProjectService {
     }
   }
 
+  // Aprova Projeto, notifica usuario solicitante e equipe de automação
   async approveProject(projectId: string, username: string, newStatus: ProjectStatus, urgency: ProjectUrgency): Promise<Project> {
     const project = await this.getProject(projectId)
 
@@ -249,7 +250,7 @@ export class ProjectService {
               requester.matricula,
               requester.unidade
             );
-            
+
             if (userEmail) {
               const requesterPayload = {
                 to: [userEmail],
@@ -310,6 +311,7 @@ export class ProjectService {
     }
   }
 
+  // Atualiza o prazo de conclusão do projeto
   async updateEstimatedTime(projectId: string, estimatedTime: string, userRegistration?: string): Promise<void> {
     try {
       const project = await this.getProject(projectId)
@@ -371,6 +373,38 @@ export class ProjectService {
         payload: { service }
       })
 
+      try {
+        const requester = project.requestedBy
+        // Notificar SOLICITANTE
+        const isEnabled = await NotificationService.isNotificationEnabled(
+          requester.matricula,
+          requester.unidade
+        );
+
+        if (isEnabled) {
+          const userEmail = await NotificationService.getUserEmail(
+            requester.matricula,
+            requester.unidade
+          );
+
+          if (userEmail) {
+            const requesterPayload = {
+              to: [userEmail],
+              subject: `Solicitação de Projeto Atendida`,
+              title: `Projeto ${project.projectName}`,
+              message: `Seu projeto "${project.projectName}" foi atendido pelo usuario ${project.automationTeam}.`,
+              link: `${config.frontend_url}/project/${project.id}`,
+              application: "automation"
+            } as NotificationPayload;
+
+            await NotificationService.sendNotification(requesterPayload);
+            console.log(`Notificação de atendimento de chamado enviada para ${requester.usuario}`);
+          }
+        }
+      } catch (error) {
+        console.error(`Erro ao notificar usuario que o projeto ${project.id} foi atendido`);
+      }
+
       return project
     } catch (error) {
       if (error instanceof AppError) throw error;
@@ -419,13 +453,13 @@ export class ProjectService {
         if (requester) {
           const isEnabled = await NotificationService.isNotificationEnabled(
             requester.matricula,
-            requester.unidade || "UPA"
+            requester.unidade
           );
 
           if (isEnabled) {
             const userEmail = await NotificationService.getUserEmail(
               requester.matricula,
-              requester.unidade || "UPA"
+              requester.unidade
             );
 
             if (userEmail) {
@@ -496,13 +530,13 @@ export class ProjectService {
         if (requester) {
           const isEnabled = await NotificationService.isNotificationEnabled(
             requester.matricula,
-            requester.unidade || "UPA"
+            requester.unidade
           );
 
           if (isEnabled) {
             const userEmail = await NotificationService.getUserEmail(
               requester.matricula,
-              requester.unidade || "UPA"
+              requester.unidade
             );
 
             if (userEmail) {
@@ -566,13 +600,13 @@ export class ProjectService {
         if (requester) {
           const isEnabled = await NotificationService.isNotificationEnabled(
             requester.matricula,
-            requester.unidade || "UPA"
+            requester.unidade
           );
 
           if (isEnabled) {
             const userEmail = await NotificationService.getUserEmail(
               requester.matricula,
-              requester.unidade || "UPA"
+              requester.unidade
             );
 
             if (userEmail) {
