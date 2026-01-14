@@ -5,7 +5,7 @@ services:
     ports:
       - "3043:3043"
     env_file:
-      - .env.production
+      - .env.prod
     environment:
       - NODE_ENV=production
     networks:
