@@ -6,11 +6,6 @@ export class FixDefaults1768237714148 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         // 1. Remove a constraint antiga/errada de Projects (se ela existir)
         // O try/catch aqui é uma segurança caso ela já não exista mais
-        try {
-             await queryRunner.query(`ALTER TABLE "automacao"."projects" DROP CONSTRAINT "FK_819eb0710e2487334a9aa2a4d99"`);
-        } catch (e) {
-            // Ignora erro se não existir
-        }
 
         // 2. Corrige o Default
         await queryRunner.query(`ALTER TABLE "automacao"."projects" ALTER COLUMN "estimated_duration_time" SET DEFAULT '0 days'`);
