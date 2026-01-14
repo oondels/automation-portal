@@ -114,14 +114,14 @@ export class ConfigService {
 
 			let record = await this.notificationEmailRepository.findOne({
 				where: { userEmail: { matricula } },
-			});
+			}); 
 
 			if (!record) {
 				record = this.notificationEmailRepository.create({
 					userEmail: user,
 					email,
 					unidadeDass,
-					confirmed: false,
+					confirmed: true,
 					authorizedNotificationsApps: [],
 				});
 				await this.notificationEmailRepository.save(record);

@@ -416,11 +416,7 @@ export function SettingsPage() {
                   Email confirmado
                 </p>
               )}
-              {email && !isEmailConfirmed && (
-                <p className="text-sm text-orange-600 dark:text-orange-400">
-                  Email pendente de confirmação. Verifique sua caixa de entrada.
-                </p>
-              )}
+             
             </div>
 
             {/* Notification Toggle */}
