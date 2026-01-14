@@ -29,13 +29,6 @@ export type TeamMemberDTO = {
 
 export type CreateTeamInput = {
 	registration: string;
-	rfid: string;
-	barcode: string;
-	name: string;
-	username: string;
-	unidadeDass?: string;
-	role?: string;
-	level?: string;
 };
 
 export type UpdateTeamInput = Partial<
@@ -123,27 +116,50 @@ export class TeamService {
 			throw new AppError("Usuário já está cadastrado na equipe.", 409);
 		}
 
-		const rfid = safeParseBigIntAsNumber(String(input.rfid), "RFID");
-		const barcode = safeParseBigIntAsNumber(String(input.barcode), "Código de barras");
+		const userName = String(user.nome ?? "").trim();
+		const username = String(user.usuario ?? "").trim();
+		const userRfid = String(user.rfid ?? "").trim();
+		const userBarcode = String((user as any).codigoBarras ?? "").trim();
+
+		if (!userName || !username || !userRfid || !userBarcode) {
+			throw new AppError(
+				"Usuário encontrado, mas está sem nome/usuário/RFID/código de barras no cadastro.",
+				422
+			);
+		}
+
+		const rfid = safeParseBigIntAsNumber(userRfid, "RFID");
+		const barcode = safeParseBigIntAsNumber(userBarcode, "Código de barras");
+
+		const unidadeDass = String(user.unidade ?? "").trim() || "SEST";
+		const role = String(user.funcao ?? "").trim() || "intern";
+		const level = String(user.nivel ?? "").trim() || "C";
 
 		const created = this.teamRepository.create({
-			name: input.name,
+			name: userName,
 			registration: matricula,
 			rfid,
 			barcode,
-			username: input.username,
-			unidadeDass: input.unidadeDass ?? "SEST",
-			role: input.role ?? "intern",
-			level: input.level ?? "C",
+			username,
+			unidadeDass,
+			role,
+			level,
 			registrationUser: user,
 		});
 
-		const saved = await this.teamRepository.save(created);
-		const withUser = await this.teamRepository.findOne({
-			where: { id: saved.id },
-			relations: { registrationUser: true },
-		});
-		return this.toDTO(withUser ?? saved);
+		try {
+			const saved = await this.teamRepository.save(created);
+			const withUser = await this.teamRepository.findOne({
+				where: { id: saved.id },
+				relations: { registrationUser: true },
+			});
+			return this.toDTO(withUser ?? saved);
+		} catch (error: any) {
+			if (error?.code === "23505") {
+				throw new AppError("Usuário já está cadastrado na equipe.", 409);
+			}
+			throw error;
+		}
 	}
 
 	async updateTeamMember(id: string, input: UpdateTeamInput): Promise<TeamMemberDTO> {

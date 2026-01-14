@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -6,6 +6,10 @@ import {
   Mail,
   Save,
   Settings as SettingsIcon,
+  Users,
+  Pencil,
+  Trash2,
+  X,
   CheckCircle2,
   Clock,
   PlayCircle,
@@ -21,12 +25,38 @@ import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { useAuth } from "../context/auth-context";
 import { configService, UserStats } from "../services/ConfigService";
+import { teamService, TeamMember } from "../services/TeamService";
 import notification from "../components/Notification";
 
 export function SettingsPage() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [canManageTeam, setCanManageTeam] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isTeamLoading, setIsTeamLoading] = useState(false);
+  const [teamError, setTeamError] = useState<string | null>(null);
+
+  const [newMember, setNewMember] = useState({
+    registration: "",
+  });
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<
+    Partial<Pick<TeamMember, "name" | "username" | "unidadeDass" | "role" | "level"> & { rfid: string; barcode: string }>
+  >({});
+
+  const localEligibleForTeamAdmin = useMemo(() => {
+    const setor = String(user?.setor ?? "").trim().toUpperCase();
+    const nivel = String(user?.nivel ?? "").trim().toUpperCase();
+    const funcao = String(user?.funcao ?? "").trim().toUpperCase();
+    return (
+      setor === "AUTOMACAO" &&
+      nivel === "A" &&
+      ["ANALISTA", "COORDENADOR", "ADMIN"].includes(funcao)
+    );
+  }, [user?.funcao, user?.nivel, user?.setor]);
   
   // User Stats
   const [stats, setStats] = useState<UserStats>({
@@ -50,9 +80,10 @@ export function SettingsPage() {
     setIsLoading(true);
     try {
       // Load stats and notification settings in parallel
-      const [statsData, notificationData] = await Promise.all([
+      const [statsData, notificationData, accessData] = await Promise.all([
         configService.getUserStats().catch(() => null),
         configService.getNotificationSettings().catch(() => null),
+        localEligibleForTeamAdmin ? teamService.getAccess().catch(() => null) : Promise.resolve(null),
       ]);
 
       if (statsData) {
@@ -70,17 +101,116 @@ export function SettingsPage() {
         // Set defaults from user context
         setUnidadeDass(user?.unidade || "SEST");
       }
+
+      setCanManageTeam(Boolean(accessData?.canManage));
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       notification.error("Erro", "Não foi possível carregar suas configurações.");
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [localEligibleForTeamAdmin, user]);
+
+  const loadTeamMembers = useCallback(async () => {
+    if (!canManageTeam) {
+      setTeamMembers([]);
+      return;
+    }
+
+    setIsTeamLoading(true);
+    setTeamError(null);
+    try {
+      const rows = await teamService.listMembers();
+      setTeamMembers(rows);
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Não foi possível carregar a equipe.";
+      setTeamError(message);
+    } finally {
+      setIsTeamLoading(false);
+    }
+  }, [canManageTeam]);
 
   useEffect(() => {
     loadUserData();
   }, [loadUserData]);
+
+  useEffect(() => {
+    loadTeamMembers();
+  }, [loadTeamMembers]);
+
+  const handleCreateTeamMember = async () => {
+    if (!newMember.registration) {
+      notification.error("Erro", "Preencha a matrícula.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await teamService.createMember({
+        registration: newMember.registration,
+      });
+
+      setNewMember({
+        registration: "",
+      });
+
+      notification.success("Sucesso!", "Membro adicionado à equipe.");
+      await loadTeamMembers();
+    } catch (error: any) {
+      notification.error("Erro", error?.response?.data?.message || "Não foi possível adicionar o membro.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const startEdit = (member: TeamMember) => {
+    setEditingId(member.id);
+    setEditDraft({
+      name: member.name,
+      username: member.username,
+      unidadeDass: member.unidadeDass,
+      role: member.role,
+      level: member.level,
+      rfid: member.rfid,
+      barcode: member.barcode,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditDraft({});
+  };
+
+  const saveEdit = async (id: string) => {
+    setIsSaving(true);
+    try {
+      await teamService.updateMember(id, editDraft);
+      notification.success("Sucesso!", "Membro atualizado.");
+      cancelEdit();
+      await loadTeamMembers();
+    } catch (error: any) {
+      notification.error("Erro", error?.response?.data?.message || "Não foi possível atualizar o membro.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const removeMember = async (id: string) => {
+    const ok = window.confirm("Remover este membro da equipe?");
+    if (!ok) return;
+
+    setIsSaving(true);
+    try {
+      await teamService.removeMember(id);
+      notification.success("Sucesso!", "Membro removido.");
+      if (editingId === id) cancelEdit();
+      await loadTeamMembers();
+    } catch (error: any) {
+      notification.error("Erro", error?.response?.data?.message || "Não foi possível remover o membro.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSaveEmail = async () => {
     if (!email || !email.includes("@")) {
@@ -329,6 +459,176 @@ export function SettingsPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Automation Team Settings */}
+      {canManageTeam && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Equipe de Automação
+              </CardTitle>
+              <CardDescription>
+                Liste e gerencie usuários cadastrados na tabela de time
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Add member */}
+              <div className="space-y-3">
+                <Label className="text-muted-foreground">Adicionar membro</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Matrícula"
+                    value={newMember.registration}
+                    onChange={(e) => setNewMember((p) => ({ ...p, registration: e.target.value }))}
+                    disabled={isSaving}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button onClick={handleCreateTeamMember} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar"}
+                  </Button>
+                </div>
+              </div>
+
+              {/* List members */}
+              <div className="space-y-3">
+                <Label className="text-muted-foreground">Membros</Label>
+                {teamError && (
+                  <div className="border rounded-lg p-4">
+                    <p className="text-sm text-destructive">{teamError}</p>
+                  </div>
+                )}
+                {isTeamLoading ? (
+                  <div className="flex items-center justify-center min-h-[120px]">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : teamMembers.length === 0 ? (
+                  <div className="border rounded-lg p-4">
+                    <p className="text-sm text-muted-foreground">Nenhum membro cadastrado.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {teamMembers.map((member) => {
+                      const isEditing = editingId === member.id;
+                      return (
+                        <div key={member.id} className="border rounded-lg p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1">
+                              <p className="font-medium">
+                                {member.name} <span className="text-muted-foreground">({member.registration})</span>
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Usuário: {member.username} · Unidade DASS: {member.unidadeDass}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {!isEditing ? (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => startEdit(member)}
+                                    disabled={isSaving}
+                                  >
+                                    <Pencil className="h-4 w-4 mr-2" />
+                                    Editar
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => removeMember(member.id)}
+                                    disabled={isSaving}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Remover
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => saveEdit(member.id)}
+                                    disabled={isSaving}
+                                  >
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Salvar
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={cancelEdit}
+                                    disabled={isSaving}
+                                  >
+                                    <X className="h-4 w-4 mr-2" />
+                                    Cancelar
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {isEditing && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <Input
+                                placeholder="Nome"
+                                value={String(editDraft.name ?? "")}
+                                onChange={(e) => setEditDraft((p) => ({ ...p, name: e.target.value }))}
+                                disabled={isSaving}
+                              />
+                              <Input
+                                placeholder="Usuário"
+                                value={String(editDraft.username ?? "")}
+                                onChange={(e) => setEditDraft((p) => ({ ...p, username: e.target.value }))}
+                                disabled={isSaving}
+                              />
+                              <Input
+                                placeholder="Unidade DASS"
+                                value={String(editDraft.unidadeDass ?? "")}
+                                onChange={(e) => setEditDraft((p) => ({ ...p, unidadeDass: e.target.value }))}
+                                disabled={isSaving}
+                              />
+                              <Input
+                                placeholder="Role"
+                                value={String(editDraft.role ?? "")}
+                                onChange={(e) => setEditDraft((p) => ({ ...p, role: e.target.value }))}
+                                disabled={isSaving}
+                              />
+                              <Input
+                                placeholder="Level"
+                                value={String(editDraft.level ?? "")}
+                                onChange={(e) => setEditDraft((p) => ({ ...p, level: e.target.value }))}
+                                disabled={isSaving}
+                              />
+                              <Input
+                                placeholder="RFID"
+                                value={String(editDraft.rfid ?? "")}
+                                onChange={(e) => setEditDraft((p) => ({ ...p, rfid: e.target.value }))}
+                                disabled={isSaving}
+                              />
+                              <Input
+                                placeholder="Código de barras"
+                                value={String(editDraft.barcode ?? "")}
+                                onChange={(e) => setEditDraft((p) => ({ ...p, barcode: e.target.value }))}
+                                disabled={isSaving}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Project Statistics */}
       <motion.div
