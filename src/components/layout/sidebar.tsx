@@ -86,7 +86,7 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
       icon: <Settings size={20} />,
       path: "/settings",
       onClick: () => isMobile && setIsOpen(false),
-      disabled: true,
+      disabled: false,
     },
     {
       title: user ? "Sair" : "Entrar",

@@ -5,6 +5,8 @@ import http from "http"
 import cookieParser from "cookie-parser"
 import { projectRoute } from "./routes/project.route"
 import { approverRoute } from "./routes/approver.route"
+import { configRoute } from "./routes/config.route"
+import { teamRoute } from "./routes/team.route"
 import { WsManager, setWsManagerInstance } from './websockets/manager';
 import { config } from "./config/env"
 import { AppError } from './utils/AppError';
@@ -21,6 +23,10 @@ AppDataSource.initialize()
       app.use(express.json())
       app.use("/api/projects/", projectRoute)
       app.use("/api/approvers/", approverRoute)
+      app.use("/api/team/", teamRoute)
+      // Config endpoints (compatível com chamadas /api/config/* e /config/*)
+      app.use("/api/config/", configRoute)
+      app.use("/config/", configRoute)
       // Error Handler
       app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
         console.error(`Error on method ${req.method} - ${req.originalUrl}:`, error);
