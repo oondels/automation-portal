@@ -27,6 +27,7 @@ import { useAuth } from "../context/auth-context";
 import { configService, UserStats } from "../services/ConfigService";
 import { teamService, TeamMember } from "../services/TeamService";
 import notification from "../components/Notification";
+import { ApproverSettingsCard } from "../components/ApproverSettingsCard";
 
 export function SettingsPage() {
   const { user } = useAuth();
@@ -625,6 +626,15 @@ export function SettingsPage() {
           </Card>
         </motion.div>
       )}
+
+      {/* Approver Management */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.28 }}
+      >
+        <ApproverSettingsCard />
+      </motion.div>
 
       {/* Project Statistics */}
       <motion.div

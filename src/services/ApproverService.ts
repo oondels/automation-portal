@@ -3,6 +3,19 @@ import { Approver, CreateApproverPayload, UpdateApproverPayload } from "../types
 
 class ApproverService {
   /**
+   * Checa se o usuário pode gerenciar aprovadores
+   */
+  async getAccess(): Promise<{ canManageApprovers: boolean }> {
+    try {
+      const response = await api.get("/api/approvers/access");
+      return response.data;
+    } catch (error) {
+      console.error("Error getting approver access:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Lista todos os aprovadores
    */
   async listApprovers(): Promise<{ message: string; data: Approver[] }> {
