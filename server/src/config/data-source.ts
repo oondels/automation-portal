@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
   database: config.database.name,
   synchronize: false, // Keep just in development mode
   logging: false,
-  entities: ["src/models/*.ts"],
-  migrations: ["src/migrations/*.ts"],
+  entities: [User, Team, Project, ProjectTimeline, NotificationEmail, Approver], // Correção de erro que ao compiçlar mantinha .ts, e ao jogar em produção causava erro
+  migrations: [config.env === 'development' ? "src/migrations/*.ts" : "src/migrations/*.js"], // Correção de erro que ao compiçlar mantinha .ts, e ao jogar em produção causava erro
   subscribers: [],
 })
