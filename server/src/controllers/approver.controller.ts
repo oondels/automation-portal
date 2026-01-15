@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ApproverService, ApproversData } from "../services/approvers.service";
+import { canManageApproversByMatricula } from "../services/approver-access.service";
 import { AppError } from "../utils/AppError";
 
 export class ApproverController {
@@ -7,6 +8,21 @@ export class ApproverController {
 
   constructor () {
     this.approveService = new ApproverService();
+  }
+
+  async getAccess(req: Request, res: Response, next: NextFunction) {
+    try {
+      const matricula = req.user?.matricula;
+      if (!matricula) {
+        throw new AppError("Acesso negado!", 401);
+      }
+
+      const canManageApprovers = await canManageApproversByMatricula(String(matricula));
+      res.status(200).json({ canManageApprovers });
+      return;
+    } catch (error) {
+      next(error);
+    }
   }
 
   async addApprover(req: Request, res: Response, next: NextFunction) {

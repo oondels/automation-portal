@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ApproverController } from "../controllers/approver.controller";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
-import { CheckPermission } from "../middlewares/checkPermission.middleware";
+import { ApproverAdminMiddleware } from "../middlewares/approverAdmin.middleware";
 import { validateRequest } from "../middlewares/validateRequest.middleware";
 import { createApproverSchema } from "../dtos/create-approver.dto";
 import { updateApproverSchema, approverIdParamSchema } from "../dtos/update-approver.dto";
@@ -9,52 +9,63 @@ import { updateApproverSchema, approverIdParamSchema } from "../dtos/update-appr
 export const approverRoute = Router();
 const approverController = new ApproverController();
 
-// GET /approvers - Listar todos aprovadores (apenas ADMIN)
+// GET /approvers/access - Checa se o usuário pode gerenciar aprovadores
+approverRoute.get(
+	"/access",
+	AuthMiddleware,
+	approverController.getAccess.bind(approverController)
+);
+
+// GET /approvers - Listar todos aprovadores
 approverRoute.get(
   "/", 
   AuthMiddleware, 
-  CheckPermission("manageApprovers"),
+  ApproverAdminMiddleware,
   approverController.listApprovers.bind(approverController)
 );
 
-// GET /approvers/:id - Buscar aprovador específico (apenas ADMIN)
+// GET /approvers/:id - Buscar aprovador específico
 approverRoute.get(
   "/:id", 
   AuthMiddleware, 
-  CheckPermission("manageApprovers"),
+  ApproverAdminMiddleware,
+  validateRequest(approverIdParamSchema, "params"),
   approverController.getApprover.bind(approverController)
 );
 
-// POST /approvers - Criar novo aprovador (apenas ADMIN)
+// POST /approvers - Criar novo aprovador
 approverRoute.post(
   "/", 
   AuthMiddleware, 
-  CheckPermission("manageApprovers"),
+  ApproverAdminMiddleware,
   validateRequest(createApproverSchema),
   approverController.addApprover.bind(approverController)
 );
 
-// PATCH /approvers/:id - Atualizar aprovador (apenas ADMIN)
+// PATCH /approvers/:id - Atualizar aprovador
 approverRoute.patch(
   "/:id", 
   AuthMiddleware, 
-  CheckPermission("manageApprovers"),
+  ApproverAdminMiddleware,
+  validateRequest(approverIdParamSchema, "params"),
   validateRequest(updateApproverSchema),
   approverController.editApprover.bind(approverController)
 );
 
-// DELETE /approvers/:id - Desativar aprovador (soft delete, apenas ADMIN)
+// DELETE /approvers/:id - Desativar aprovador (soft delete)
 approverRoute.delete(
   "/:id", 
   AuthMiddleware, 
-  CheckPermission("manageApprovers"),
+  ApproverAdminMiddleware,
+  validateRequest(approverIdParamSchema, "params"),
   approverController.deleteApprover.bind(approverController)
 );
 
-// PATCH /approvers/:id/toggle - Ativar/Desativar aprovador (apenas ADMIN)
+// PATCH /approvers/:id/toggle - Ativar/Desativar aprovador
 approverRoute.patch(
   "/:id/toggle", 
   AuthMiddleware, 
-  CheckPermission("manageApprovers"),
+  ApproverAdminMiddleware,
+  validateRequest(approverIdParamSchema, "params"),
   approverController.toggleApproverStatus.bind(approverController)
 );
