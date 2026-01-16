@@ -392,7 +392,7 @@ export class ProjectService {
               to: [userEmail],
               subject: `Solicitação de Projeto Atendida`,
               title: `Projeto ${project.projectName}`,
-              message: `Seu projeto "${project.projectName}" foi atendido pelo usuario ${project.automationTeam}.`,
+              message: `Seu projeto "${project.projectName}" foi atendido pelo usuario ${project.automationTeam?.name}.`,
               link: `${config.frontend_url}/project/${project.id}`,
               application: "automation"
             } as NotificationPayload;
