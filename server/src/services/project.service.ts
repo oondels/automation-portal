@@ -419,9 +419,9 @@ export class ProjectService {
       const project = await this.getProject(projectId)
 
       if (project.status !== ProjectStatus.IN_PROGRESS) throw new AppError("Only projects with status 'in_progress' can be paused!")
-      if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
-        throw new AppError("Only the user attending the request can pause it.", 401)
-      }
+      // if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
+      //   throw new AppError("Only the user attending the request can pause it.", 401)
+      // }
 
       project.recordedPauses = project.recordedPauses ?? [];
       // TODO: Fix the timestamp calculation
@@ -493,9 +493,9 @@ export class ProjectService {
       const project = await this.getProject(projectId)
 
       if (project.status !== ProjectStatus.PAUSED) throw new AppError("Only projects with status 'paused' can be resumed!")
-      if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
-        throw new AppError("Only the user attending the request can resume it.", 401)
-      }
+      // if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
+      //   throw new AppError("Only the user attending the request can resume it.", 401)
+      // }
 
       project.recordedPauses = project.recordedPauses ?? [];
 
@@ -572,9 +572,9 @@ export class ProjectService {
       const project = await this.getProject(projectId)
 
       if (project.status !== ProjectStatus.IN_PROGRESS) throw new AppError("Only projects with status 'in_progress' can be completed!")
-      if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
-        throw new AppError("Only the user attending the request can complete it.", 401)
-      }
+      // if (Number(user.matricula) !== Number(project.automationTeam?.registration)) {
+      //   throw new AppError("Only the user attending the request can complete it.", 401)
+      // }
 
       const now = new Date();
       const oldStatus = project.status
