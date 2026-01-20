@@ -4,8 +4,7 @@ import { CreateProjectDTO } from "../types/project";
 import { AppError } from "../utils/AppError";
 import { User as UserEntity } from "../models/User";
 import { ListProjectsQuery } from "../dtos/list-projects.dto";
-import { permissionMap } from "../middlewares/checkPermission.middleware"
-import { TokenPayload } from "../types/auth";
+import { ApproverPolicyService } from "../services/approver-policy.service";
 
 const userRolesMap = ['admin', 'automation', 'user'] as const;
 type UserRole = typeof userRolesMap[number];
@@ -13,10 +12,12 @@ type UserRole = typeof userRolesMap[number];
 export class ProjectController {
   private projectService: ProjectService;
   private allowedServices: string[];
+  private approverPolicy: ApproverPolicyService;
 
   constructor() {
     this.projectService = new ProjectService();
     this.allowedServices = ["automation", "carpentry", "metalwork"]
+    this.approverPolicy = new ApproverPolicyService();
   }
 
   checkService(service: string): void {
@@ -25,23 +26,20 @@ export class ProjectController {
     }
   }
 
-  checkUserRole(user: UserEntity): UserRole | undefined {
+  async checkUserRole(user: UserEntity): Promise<UserRole | undefined> {
     if (!user) {
       throw new AppError("Usuário não encontrado", 404)
     }
 
-    const adminAccess = permissionMap['approveProject'];
-
     const userSector = user.setor?.toLowerCase()
-    const userRole = user.funcao?.toLowerCase()
 
-    if (!userSector || !userRole) {
-      throw new AppError("Setor ou função do usuário não encontrados", 404)
+    if (!userSector) {
+      throw new AppError("Setor do usuário não encontrado", 404)
     }
 
-    if (userRole === 'gerente' && adminAccess.allowedRoles.includes(userRole.toUpperCase())) {
-      return 'admin';
-    }
+    // Admin (aprovação/rejeição) é definido exclusivamente pela tabela automacao.approvers
+    const isApprover = await this.approverPolicy.canApproveProjectsByMatricula(String(user.matricula));
+    if (isApprover) return 'admin';
 
     if (userSector === 'automacao') {
       return 'automation';
@@ -70,7 +68,7 @@ export class ProjectController {
 
       const user = req.user as unknown as UserEntity;
 
-      const role = this.checkUserRole(user);
+      const role = await this.checkUserRole(user);
       if (!role) {
         res.status(403).json({ message: "Acesso negado. Função do usuário não definida. Procure o setor de automação." });
         return;
@@ -118,11 +116,12 @@ export class ProjectController {
 
   async approveProject(req: Request, res: Response, next: NextFunction) {
     const projectId = req.params.id;
-    const username = req.user?.usuario as string
+    const username = (req.user?.usuario as string) || "";
+    const approverMatricula = String(req.user?.matricula ?? "");
     const { status, urgency } = req.body;
 
     try {
-      const project = await this.projectService.approveProject(projectId, username, status, urgency);
+      const project = await this.projectService.approveProject(projectId, { matricula: approverMatricula, usuario: username }, status, urgency);
 
       res.status(200).json({
         message: `Project approved successfully`,

@@ -37,6 +37,16 @@ export class ProjectService {
     return true;
   }
 
+  private isAppAuthorized(value: unknown, application: string): boolean {
+    if (Array.isArray(value)) {
+      return value.map(v => String(v)).includes(application);
+    }
+    if (value && typeof value === "object") {
+      return Boolean((value as Record<string, unknown>)[application]);
+    }
+    return false;
+  }
+
   async getProject(id: string): Promise<Project> {
     const project = await this.projectRepository.findOne({
       where: { id: id },
@@ -203,7 +213,12 @@ export class ProjectService {
   }
 
   // Aprova Projeto, notifica usuario solicitante e equipe de automação
-  async approveProject(projectId: string, username: string, newStatus: ProjectStatus, urgency: ProjectUrgency): Promise<Project> {
+  async approveProject(
+    projectId: string,
+    approver: { matricula: string; usuario?: string },
+    newStatus: ProjectStatus,
+    urgency: ProjectUrgency
+  ): Promise<Project> {
     const project = await this.getProject(projectId)
 
     if (project.status !== ProjectStatus.REQUESTED) {
@@ -213,24 +228,22 @@ export class ProjectService {
     const oldStatus = project.status
     project.status = newStatus;
     project.urgency = urgency
-    project.approvedBy = username
+    const approvedBy = (approver.usuario && String(approver.usuario).trim()) ? String(approver.usuario).trim() : String(approver.matricula).trim();
+    project.approvedBy = approvedBy
     project.approvedAt = new Date();
 
     try {
       await this.projectRepository.save(project)
-      // find approver by username to get registration
-      const approver = await this.userRepository.findOne({ where: { usuario: username } })
-      if (approver) {
-        await this.appendTimeline({
-          project,
-          userRegistration: approver.matricula,
-          eventType: 'aprovado',
-          description: `Projeto ${newStatus} por ${username} (urgência: ${urgency})`,
-          oldStatus,
-          newStatus,
-          payload: { urgency }
-        })
-      }
+
+      await this.appendTimeline({
+        project,
+        userRegistration: String(approver.matricula),
+        eventType: 'aprovado',
+        description: `Projeto ${newStatus} por ${approvedBy} (urgência: ${urgency})`,
+        oldStatus,
+        newStatus,
+        payload: { urgency, approvedBy }
+      })
 
       // Notificar solicitante sobre aprovação/rejeição
       try {
@@ -256,7 +269,7 @@ export class ProjectService {
                 to: [userEmail],
                 subject: `Projeto ${statusText}: ${project.projectName}`,
                 title: `Projeto ${statusText.toUpperCase()}`,
-                message: `Seu projeto "${project.projectName}" foi ${statusText} por ${username} com urgência ${urgencyLabels[urgency] || urgency}. Aguarde a equipe de automação iniciar o atendimento e definir o prazo de entrega.`,
+                message: `Seu projeto "${project.projectName}" foi ${statusText} por ${approvedBy} com urgência ${urgencyLabels[urgency] || urgency}. Aguarde a equipe de automação iniciar o atendimento e definir o prazo de entrega.`,
                 link: `${config.frontend_url}/project/${project.id}`,
                 application: "automation"
               } as NotificationPayload;
@@ -277,7 +290,7 @@ export class ProjectService {
           for (const member of teamMembers) {
             const email = member.registrationUser?.email;
             // Verificar se email confirmado e autorizado para automation
-            if (email?.confirmed && email.authorizedNotificationsApps?.includes("automation")) {
+            if (email?.confirmed && this.isAppAuthorized(email.authorizedNotificationsApps, "automation")) {
               teamEmails.push(email.email);
             }
           }

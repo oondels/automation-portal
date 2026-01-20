@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { ApproverService } from "../services/approvers.service";
 
 // TODO: Fazer configuração geral -> Marcenaria, Serralheria e Automação
 // TODO: Tranferir armazenamento de usuarios liberados para tabela propria
@@ -11,13 +10,8 @@ export type RolePermissionMap = {
   };
 };
 
-const approverService = new ApproverService()
 // TODO: Fazer gerenciamento das outras permissoes com mapeamento e armazenamento em banco de dados, retirar o hardcode atual
 export const permissionMap: RolePermissionMap = {
-  approveProject: {
-    allowedRoles: ["GERENTE"],
-    allowedUsers: []
-  },
   updateEstimatedTime: {
     allowedRoles: ["ANALISTA", "COORDENADOR", "TI", "MARCENEIRO", "SERRALHEIRO"],
     allowedSectors: ["AUTOMACAO", "MARCENARIA", "SERRALHERIA", "TI"]
@@ -25,10 +19,6 @@ export const permissionMap: RolePermissionMap = {
   attendProject: {
     allowedRoles: ["ANALISTA", "AUTOMACAO", "MECANICO", "TI", "MARCENEIRO", "SERRALHEIRO"],
     allowedSectors: ["AUTOMACAO", "TI", "MARCENARIA", "SERRALHERIA"]
-  },
-  manageApprovers: {
-    allowedRoles: ["ADMIN"],
-    allowedUsers: []
   }
 };
 
@@ -37,14 +27,6 @@ export const permissionMap: RolePermissionMap = {
 // Se o usuario tiver permissão, chama o next
 export const CheckPermission = (action: keyof typeof permissionMap, role: string = "") => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    if (!permissionMap || !permissionMap?.approveProject?.allowedUsers || permissionMap?.approveProject?.allowedUsers.length <= 0) {
-      const approvers = await approverService.getApprovers()
-
-      approvers?.forEach(approver => {
-        permissionMap.approveProject.allowedUsers?.push(approver.usuario)
-      })
-    }
-
     const user = req.user;
     const permission = permissionMap[action];
 
@@ -57,11 +39,23 @@ export const CheckPermission = (action: keyof typeof permissionMap, role: string
       return
     }
 
-    const roleAllowed = permission.allowedRoles.includes(user.funcao?.toUpperCase?.() ?? "");
-    const userAllowed = permission.allowedUsers ? permission.allowedUsers.includes(user?.usuario as string) : true;
-    const sectorAllowed = permission.allowedSectors ? permission.allowedSectors.includes(user?.setor?.toUpperCase?.() ?? "") : true;
+    const userRole = String(user.funcao ?? "").trim().toUpperCase();
+    const userSector = String(user.setor ?? "").trim().toUpperCase();
+    const userLogin = String((user as any)?.usuario ?? "").trim();
 
-    if ((roleAllowed && sectorAllowed) || (roleAllowed && userAllowed) || user.funcao.toUpperCase() === role.toUpperCase()) {
+    const roleAllowed = permission.allowedRoles.includes(userRole);
+
+    const userAllowed = permission.allowedUsers === undefined
+      ? true
+      : (permission.allowedUsers.length > 0 && permission.allowedUsers.includes(userLogin));
+
+    const sectorAllowed = permission.allowedSectors === undefined
+      ? true
+      : (permission.allowedSectors.length > 0 && permission.allowedSectors.includes(userSector));
+
+    const overrideRole = String(role ?? "").trim().toUpperCase();
+
+    if ((roleAllowed && sectorAllowed && userAllowed) || (overrideRole && userRole === overrideRole)) {
       next();
       return
     }

@@ -6,6 +6,20 @@ import { NotificationEmail } from "../models/NotificationEmail"
 import { AppError } from "../utils/AppError";
 
 const notificationRepository = AppDataSource.getRepository(NotificationEmail)
+
+function coerceAuthorizedApps(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map(v => String(v)).filter(Boolean);
+  }
+  // Backward compatibility: if stored as object/map, treat truthy keys as enabled apps
+  if (value && typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([, enabled]) => Boolean(enabled))
+      .map(([app]) => String(app));
+  }
+  return [];
+}
+
 export const NotificationService = {
   async sendNotification(payload: NotificationPayload) {
     try {
@@ -38,7 +52,7 @@ export const NotificationService = {
       }
 
       const authorizedApps = userEmail.authorizedNotificationsApps
-      const isNotificationEnabled = authorizedApps?.includes("automation")
+      const isNotificationEnabled = coerceAuthorizedApps(authorizedApps).includes("automation")
 
       return isNotificationEnabled;
     } catch (error: any) {

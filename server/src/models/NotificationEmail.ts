@@ -29,5 +29,5 @@ export class NotificationEmail {
   unidadeDass?: string;
 
   @Column({ name: 'authorized_notifications_apps', type: 'jsonb', nullable: true })
-  authorizedNotificationsApps?: Record<string, any>;
+  authorizedNotificationsApps?: string[];
 }

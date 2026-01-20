@@ -2,6 +2,7 @@ import Router, { Request, Response } from "express"
 import { ProjectController } from "../controllers/project.controller";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
 import { CheckPermission } from "../middlewares/checkPermission.middleware";
+import { RequireActiveApprover } from "../middlewares/approverPermission.middleware";
 import { validateRequest } from "../middlewares/validateRequest.middleware";
 import { projectValidationSchema } from "../dtos/approve-project.dto";
 import { estimatedTimeSchema } from "../dtos/estimated-time.dto";
@@ -17,7 +18,7 @@ projectRoute.get("/", AuthMiddleware, projectController.listProjects.bind(projec
 
 projectRoute.post("/", AuthMiddleware, validateRequest(createProjectSchema), projectController.newProject.bind(projectController));
 
-projectRoute.get("/test/approve", AuthMiddleware, CheckPermission("approveProject"), projectController.testRolePermission.bind(projectController))
+projectRoute.get("/test/approve", AuthMiddleware, RequireActiveApprover, projectController.testRolePermission.bind(projectController))
 
 const approverService = new ApproverService()
 projectRoute.get("/test/approve2", async (req: Request, res: Response) => {
@@ -32,13 +33,12 @@ projectRoute.get("/test/approve2", async (req: Request, res: Response) => {
   }
 })
 
-projectRoute.patch("/:id/approval", AuthMiddleware, CheckPermission("approveProject"),
+projectRoute.patch("/:id/approval", AuthMiddleware, RequireActiveApprover,
   validateRequest(projectValidationSchema), projectController.approveProject.bind(projectController));
 
 projectRoute.patch("/:id/estimated-time", AuthMiddleware, CheckPermission("updateEstimatedTime"),
   validateRequest(estimatedTimeSchema), projectController.updateEstimatedTime.bind(projectController));
 
-// TODO: Criar DTO para verificação de dados se necessariostat
 // AuthMiddleware, CheckPermission("attendProject"),
 projectRoute.put("/:id/attend/:service", AuthMiddleware, projectController.attendProject.bind(projectController))
 

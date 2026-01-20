@@ -3,6 +3,19 @@ import { AppDataSource } from "../config/data-source";
 import { Approver } from "../models/Approvers";
 import { AppError } from "../utils/AppError";
 
+function coerceAuthorizedApps(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map(v => String(v)).filter(Boolean);
+  }
+  // Backward compatibility: if stored as object/map, treat truthy keys as enabled apps
+  if (value && typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([, enabled]) => Boolean(enabled))
+      .map(([app]) => String(app));
+  }
+  return [];
+}
+
 export interface ApproversData {
   id: string;
   matricula: string;
@@ -198,7 +211,7 @@ export class ApproverService {
         }
 
         // Verificar autorização para o aplicativo
-        const authorizedApps = email.authorizedNotificationsApps || [];
+        const authorizedApps = coerceAuthorizedApps(email.authorizedNotificationsApps);
         if (!authorizedApps.includes(application)) {
           console.log(`Approver ${approver.usuario} - Não autorizado para ${application}`);
           continue;
