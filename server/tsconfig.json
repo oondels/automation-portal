@@ -6,7 +6,6 @@
     "emitDecoratorMetadata": true,
     "rootDir": "./src",
     "outDir": "./dist",
-    "baseUrl": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

@@ -388,8 +388,8 @@ export function ProjectsPage() {
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Setor</th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Urgência</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Progresso</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Prazo</th>
+                    {/* <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Progresso</th> */}
+                    {/* <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Prazo</th> */}
                     <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Ações</th>
                   </tr>
                 </thead>
@@ -423,7 +423,7 @@ export function ProjectsPage() {
                             <span className="capitalize">{project.urgency}</span>
                           </div>
                         </td>
-                        <td className="p-4 align-middle">
+                        {/* <td className="p-4 align-middle">
                           <div className="w-full space-y-1">
                             <div className="h-2 rounded-full bg-muted">
                               <div
@@ -433,13 +433,13 @@ export function ProjectsPage() {
                             </div>
                             <p className="text-xs text-muted-foreground">{Math.round(progress)}% decorrido</p>
                           </div>
-                        </td>
-                        <td className="p-4 align-middle">
+                        </td> */}
+                        {/* <td className="p-4 align-middle">
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-muted-foreground" />
                             <span>{formateInterval(project.estimatedDurationTime as object)}</span>
                           </div>
-                        </td>
+                        </td> */}
                         <td className="p-4 text-right align-middle">
                           <Link to={`/project/${project.id}`}>
                             <Button variant="outline" size="sm">

@@ -18,21 +18,6 @@ projectRoute.get("/", AuthMiddleware, projectController.listProjects.bind(projec
 
 projectRoute.post("/", AuthMiddleware, validateRequest(createProjectSchema), projectController.newProject.bind(projectController));
 
-projectRoute.get("/test/approve", AuthMiddleware, RequireActiveApprover, projectController.testRolePermission.bind(projectController))
-
-const approverService = new ApproverService()
-projectRoute.get("/test/approve2", async (req: Request, res: Response) => {
-  try {
-    const emails = await approverService.getApproversEmails()
-
-    res.status(200).json(emails)
-    return
-  } catch (error) {
-    console.error("Error desconhecido");
-    res.status(500).send("Error")
-  }
-})
-
 projectRoute.patch("/:id/approval", AuthMiddleware, RequireActiveApprover,
   validateRequest(projectValidationSchema), projectController.approveProject.bind(projectController));
 
