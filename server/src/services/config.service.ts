@@ -131,6 +131,7 @@ export class ConfigService {
 			const emailChanged = (record.email ?? "").trim().toLowerCase() !== email.trim().toLowerCase();
 			record.email = email;
 			record.unidadeDass = unidadeDass;
+      record.confirmed = true;
 			if (emailChanged) {
 				record.confirmed = false;
 			}
