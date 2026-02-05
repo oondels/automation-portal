@@ -145,9 +145,9 @@ export function ProjectDetailsPage() {
   };
 
   if (
-    user?.setor !== "AUTOMACAO" &&
-    user?.setor !== "TI" &&
-    user?.funcao !== "GERENTE" &&
+    // !user?.setor.toUpperCase().includes("AUTOMACAO") &&
+    // !user?.setor.toUpperCase().includes("TI") &&
+    !user?.funcao.toUpperCase().includes("GERENTE") &&
     project.status === "requested"
   ) {
     return (
