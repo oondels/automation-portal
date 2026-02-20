@@ -193,7 +193,7 @@ export class ProjectService {
             application: "automation"
           } as NotificationPayload;
 
-          await NotificationService.sendNotification(notificationPayload);
+          // await NotificationService.sendNotification(notificationPayload);
           console.log(`Notificação enviada para ${emails.length} aprovador(es)`);
         } else {
           console.warn("Nenhum aprovador ativo disponível para notificação");
