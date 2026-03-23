@@ -3,7 +3,7 @@ import { ip } from "../config/ip"
 import axios from "axios"
 
 export const authApi = axios.create({
-  baseURL: `${ip}:2399`
+  baseURL: `${ip}:2399/api`
 });
 
 export const api = axios.create({

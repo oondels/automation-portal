@@ -41,6 +41,7 @@ export class ProjectController {
     const isApprover = await this.approverPolicy.canApproveProjectsByMatricula(String(user.matricula));
     if (isApprover) return 'admin';
 
+    // TODO: verificar para ver se esta na equipe de automacao
     if (userSector === 'automacao') {
       return 'automation';
     }
