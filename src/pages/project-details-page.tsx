@@ -396,7 +396,7 @@ export function ProjectDetailsPage() {
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Aprovar
                   </Button>
-                  <Button variant="destructive" size="sm">
+                  <Button onClick={() => approveProject("rejected")} variant="destructive" size="sm">
                     <XCircle className="mr-2 h-4 w-4" />
                     Rejeitar
                   </Button>
